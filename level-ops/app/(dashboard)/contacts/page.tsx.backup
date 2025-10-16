@@ -1,0 +1,922 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useCopilotAction, useCopilotReadable } from "@copilotkit/react-core";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Users, Pencil, Trash2, Mail, Phone, Building2, ShieldAlert, Eye } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useOrganization } from "@/lib/context/organization-context";
+import { useAuditLog } from "@/lib/hooks/use-audit-log";
+import { usePermissions } from "@/lib/hooks/use-permissions";
+import { PermissionGuard, RoleBadge } from "@/components/permissions";
+import { getCreatePermissionError, getEditPermissionError, getDeletePermissionError } from "@/lib/utils/permission-errors";
+import { getSupabaseErrorMessage, logError } from "@/lib/utils/error-handling";
+import { ErrorState, LoadingState } from "@/components/error-states";
+
+type Contact = {
+  id: string;
+  tenant_id: string;
+  org_id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+  title: string | null;
+  type: string;
+  status: string;
+  notes: string | null;
+  metadata: any;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+const TYPE_OPTIONS = [
+  { value: "client", label: "Client", color: "bg-primary/10 text-primary border-primary/20" },
+  { value: "vendor", label: "Vendor", color: "bg-slate-200 text-slate-900 border-slate-300" },
+  { value: "stakeholder", label: "Stakeholder", color: "bg-slate-100 text-slate-800 border-slate-200" },
+  { value: "team_member", label: "Team Member", color: "bg-slate-100 text-slate-700 border-slate-200" },
+  { value: "contractor", label: "Contractor", color: "bg-slate-200 text-slate-800 border-slate-300" },
+  { value: "partner", label: "Partner", color: "bg-slate-100 text-slate-700 border-slate-200" },
+  { value: "other", label: "Other", color: "bg-gray-100 text-gray-700 border-gray-200" },
+];
+
+const STATUS_OPTIONS = [
+  { value: "active", label: "Active", color: "bg-primary/10 text-primary border-primary/20" },
+  { value: "inactive", label: "Inactive", color: "bg-gray-100 text-gray-800 border-gray-200" },
+];
+
+export default function ContactsPage() {
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newContact, setNewContact] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    company: "",
+    title: "",
+    type: "other",
+    status: "active",
+    notes: "",
+  });
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const supabase = createClient();
+  const { currentOrg } = useOrganization();
+  const { logAgentAction } = useAuditLog();
+  const { canEdit, canDelete, isViewer, role } = usePermissions();
+
+  // Load contacts function
+  const loadContacts = async () => {
+    try {
+      setLoadError(null);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !currentOrg) {
+        setIsLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("*")
+        .eq("org_id", currentOrg.id)
+        .order("last_name", { ascending: true });
+
+      if (error) {
+        const errorMessage = getSupabaseErrorMessage(error);
+        setLoadError(errorMessage);
+        logError(error, {
+          action: "load_contacts",
+          resource: "contacts",
+          userId: user.id,
+          orgId: currentOrg.id,
+        });
+      } else if (data) {
+        setContacts(data);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      setLoadError(errorMessage);
+      logError(error as Error, {
+        action: "load_contacts",
+        resource: "contacts",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load contacts on mount and when page becomes visible
+  useEffect(() => {
+    if (!currentOrg) return;
+    loadContacts();
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadContacts();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [supabase, currentOrg?.id]);
+
+  // Realtime subscription for live updates
+  useEffect(() => {
+    if (!currentOrg) return;
+
+    const channel = supabase
+      .channel('contacts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contacts',
+          filter: `org_id=eq.${currentOrg.id}`,
+        },
+        (payload) => {
+          console.log('[Contacts Realtime]', payload.eventType, payload);
+          if (payload.eventType === 'INSERT') {
+            setContacts(current => [...current, payload.new as Contact].sort((a, b) => a.last_name.localeCompare(b.last_name)));
+          } else if (payload.eventType === 'UPDATE') {
+            setContacts(current => current.map(c => c.id === payload.new.id ? payload.new as Contact : c).sort((a, b) => a.last_name.localeCompare(b.last_name)));
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as any)?.id;
+            console.log('[Contacts Realtime] Deleting contact with ID:', deletedId);
+            setContacts(current => current.filter(c => c.id !== deletedId));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, currentOrg?.id]);
+
+  // Make contacts readable to the AI
+  useCopilotReadable({
+    description: "The current list of project contacts and stakeholders",
+    value: contacts.map(c => ({
+      id: c.id,
+      name: `${c.first_name} ${c.last_name}`,
+      email: c.email,
+      phone: c.phone,
+      company: c.company,
+      title: c.title,
+      type: c.type,
+      status: c.status,
+    })),
+  });
+
+  // AI action to create a contact
+  useCopilotAction({
+    name: "createContact",
+    description: "Create a new contact record for a stakeholder, team member, client, or vendor. Requires EDITOR, ADMIN, or OWNER role.",
+    parameters: [
+      {
+        name: "first_name",
+        type: "string",
+        description: "Contact's first name",
+        required: true,
+      },
+      {
+        name: "last_name",
+        type: "string",
+        description: "Contact's last name",
+        required: true,
+      },
+      {
+        name: "email",
+        type: "string",
+        description: "Contact's email address",
+        required: false,
+      },
+      {
+        name: "phone",
+        type: "string",
+        description: "Contact's phone number",
+        required: false,
+      },
+      {
+        name: "company",
+        type: "string",
+        description: "Contact's company name",
+        required: false,
+      },
+      {
+        name: "title",
+        type: "string",
+        description: "Contact's job title",
+        required: false,
+      },
+      {
+        name: "type",
+        type: "string",
+        description: "Contact type: client, vendor, stakeholder, team_member, contractor, partner, or other",
+        required: false,
+      },
+      {
+        name: "notes",
+        type: "string",
+        description: "Additional notes about the contact",
+        required: false,
+      },
+    ],
+    handler: async ({ first_name, last_name, email, phone, company, title, type, notes }) => {
+      try {
+        // Check permission first
+        if (!canEdit) {
+          const errorMsg = getCreatePermissionError("contacts", role);
+          console.error("[AI Action] Permission denied:", errorMsg);
+          throw new Error(errorMsg);
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !currentOrg) {
+          console.error("[AI Action] Not authenticated");
+          throw new Error("Not authenticated");
+        }
+
+        console.log("[AI Action] Creating contact:", { first_name, last_name, email, company, title, type, org_id: currentOrg.id });
+
+        const { data: insertedData, error } = await supabase.from("contacts").insert({
+          first_name,
+          last_name,
+          email: email || null,
+          phone: phone || null,
+          company: company || null,
+          title: title || null,
+          type: type || "other",
+          status: "active",
+          notes: notes || null,
+          org_id: currentOrg.id,
+          tenant_id: null, // Using organizations, not tenants
+          created_by: user.id,
+        } as any)
+        .select()
+        .single();
+
+        if (error) {
+          console.error("[AI Action] Database error:", error);
+          throw new Error(`Failed to create contact: ${error.message}`);
+        }
+
+        if (insertedData) {
+          const contact = insertedData as Contact;
+          console.log("[AI Action] Contact created successfully:", contact.id);
+
+          // Audit log the agent action
+          await logAgentAction(
+            'create',
+            'contact',
+            contact.id,
+            null,
+            { first_name: contact.first_name, last_name: contact.last_name, email: contact.email, company: contact.company, type: contact.type, status: contact.status },
+            { source: 'ai_assistant' }
+          );
+        }
+
+        return `Contact "${first_name} ${last_name}" created successfully`;
+      } catch (error) {
+        console.error("[AI Action] Error creating contact:", error);
+        throw error;
+      }
+    },
+  });
+
+  // AI action to update a contact
+  useCopilotAction({
+    name: "updateContact",
+    description: "Update an existing contact's information or status",
+    parameters: [
+      {
+        name: "contactId",
+        type: "string",
+        description: "The ID of the contact to update",
+        required: true,
+      },
+      {
+        name: "first_name",
+        type: "string",
+        description: "New first name",
+        required: false,
+      },
+      {
+        name: "last_name",
+        type: "string",
+        description: "New last name",
+        required: false,
+      },
+      {
+        name: "email",
+        type: "string",
+        description: "New email",
+        required: false,
+      },
+      {
+        name: "phone",
+        type: "string",
+        description: "New phone",
+        required: false,
+      },
+      {
+        name: "company",
+        type: "string",
+        description: "New company",
+        required: false,
+      },
+      {
+        name: "title",
+        type: "string",
+        description: "New title",
+        required: false,
+      },
+      {
+        name: "type",
+        type: "string",
+        description: "New type",
+        required: false,
+      },
+      {
+        name: "status",
+        type: "string",
+        description: "New status: active or inactive",
+        required: false,
+      },
+      {
+        name: "notes",
+        type: "string",
+        description: "New notes",
+        required: false,
+      },
+    ],
+    handler: async ({ contactId, first_name, last_name, email, phone, company, title, type, status, notes }) => {
+      // Check permission first
+      if (!canEdit) {
+        return getEditPermissionError("contacts", role);
+      }
+
+      // Get current contact state for audit log
+      const currentContact = contacts.find(c => c.id === contactId);
+
+      const updates: Partial<Contact> = {};
+      if (first_name !== undefined) updates.first_name = first_name;
+      if (last_name !== undefined) updates.last_name = last_name;
+      if (email !== undefined) updates.email = email;
+      if (phone !== undefined) updates.phone = phone;
+      if (company !== undefined) updates.company = company;
+      if (title !== undefined) updates.title = title;
+      if (type !== undefined) updates.type = type;
+      if (status !== undefined) updates.status = status;
+      if (notes !== undefined) updates.notes = notes;
+
+      const { data: updatedData, error } = await supabase
+        .from("contacts")
+        // @ts-expect-error - Supabase type inference issue with update method
+        .update(updates)
+        .eq("id", contactId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (updatedData) {
+        const contact = updatedData as Contact;
+
+        // Audit log the update
+        const beforeState = currentContact ? {
+          first_name: currentContact.first_name,
+          last_name: currentContact.last_name,
+          email: currentContact.email,
+          company: currentContact.company,
+          type: currentContact.type,
+          status: currentContact.status
+        } : null;
+
+        await logAgentAction(
+          'update',
+          'contact',
+          contact.id,
+          beforeState,
+          { ...updates },
+          { source: 'ai_assistant' }
+        );
+      }
+
+      return `Contact updated successfully`;
+    },
+  });
+
+  // AI action to delete a contact
+  useCopilotAction({
+    name: "deleteContact",
+    description: "Delete a contact from the system",
+    parameters: [
+      {
+        name: "contactId",
+        type: "string",
+        description: "The ID of the contact to delete",
+        required: true,
+      },
+    ],
+    handler: async ({ contactId }) => {
+      // Check permission first
+      if (!canDelete) {
+        return getDeletePermissionError("contacts", role);
+      }
+
+      // Get current contact state for audit log
+      const currentContact = contacts.find(c => c.id === contactId);
+
+      const { error } = await supabase
+        .from("contacts")
+        .delete()
+        .eq("id", contactId);
+
+      if (error) throw error;
+
+      // Audit log the deletion
+      if (currentContact) {
+        await logAgentAction(
+          'delete',
+          'contact',
+          contactId,
+          { first_name: currentContact.first_name, last_name: currentContact.last_name, email: currentContact.email, company: currentContact.company, type: currentContact.type, status: currentContact.status },
+          null,
+          { source: 'ai_assistant' }
+        );
+      }
+
+      return `Contact deleted successfully`;
+    },
+  });
+
+  // Create contact handler
+  const handleCreateContact = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !currentOrg) return;
+
+    const { error } = await supabase.from("contacts").insert({
+      ...newContact,
+      email: newContact.email || null,
+      phone: newContact.phone || null,
+      company: newContact.company || null,
+      title: newContact.title || null,
+      notes: newContact.notes || null,
+      org_id: currentOrg.id,
+      tenant_id: null, // Using organizations, not tenants
+      created_by: user.id,
+    } as never);
+
+    if (error) {
+      console.error("Error creating contact:", error);
+      return;
+    }
+
+    setIsCreating(false);
+    setNewContact({
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      company: "",
+      title: "",
+      type: "other",
+      status: "active",
+      notes: "",
+    });
+  };
+
+  // Update contact handler
+  const handleUpdateContact = async () => {
+    if (!editingContact) return;
+
+    const { error } = await supabase
+      .from("contacts")
+      .update({
+        first_name: editingContact.first_name,
+        last_name: editingContact.last_name,
+        email: editingContact.email || null,
+        phone: editingContact.phone || null,
+        company: editingContact.company || null,
+        title: editingContact.title || null,
+        type: editingContact.type,
+        status: editingContact.status,
+        notes: editingContact.notes || null,
+      } as never)
+      .eq("id", editingContact.id);
+
+    if (error) {
+      console.error("Error updating contact:", error);
+      return;
+    }
+
+    setEditingContact(null);
+  };
+
+  // Delete contact handler
+  const handleDeleteContact = async () => {
+    if (!deletingContact) return;
+
+    const { error } = await supabase
+      .from("contacts")
+      .delete()
+      .eq("id", deletingContact.id);
+
+    if (error) {
+      console.error("Error deleting contact:", error);
+      return;
+    }
+
+    setDeletingContact(null);
+  };
+
+  const getTypeColor = (type: string) => {
+    return TYPE_OPTIONS.find(opt => opt.value === type)?.color || TYPE_OPTIONS[6].color;
+  };
+
+  const getStatusColor = (status: string) => {
+    return STATUS_OPTIONS.find(opt => opt.value === status)?.color || STATUS_OPTIONS[0].color;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container-xl py-8">
+        <p className="text-muted-foreground">Loading contacts...</p>
+      </div>
+    );
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return <LoadingState message="Loading contacts..." />;
+  }
+
+  // Show error state with retry option
+  if (loadError) {
+    return (
+      <ErrorState
+        title="Failed to load contacts"
+        message={loadError}
+        onRetry={loadContacts}
+        type="database"
+      />
+    );
+  }
+
+  return (
+    <div className="container-xl space-y-5 pb-20 md:pb-5 animate-fade-in">
+      <header className="flex items-start justify-between pb-3 border-b border-gray-200">
+        <div className="flex-1 space-y-0.5">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">Contacts</h1>
+            <RoleBadge />
+          </div>
+          <p className="text-sm text-muted-foreground">Manage project contacts and stakeholders</p>
+        </div>
+        <PermissionGuard require="create">
+          <Button
+            size="icon"
+            onClick={() => setIsCreating(true)}
+            className="bg-primary hover:bg-primary/90 text-white rounded-lg h-9 w-9 shadow-sm hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label="Add new contact"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </PermissionGuard>
+      </header>
+
+      {contacts.length === 0 ? (
+        <Card className="p-16 flex flex-col items-center justify-center text-center">
+          <Users className="h-12 w-12 text-muted-foreground/50 mb-4" aria-hidden="true" />
+          <p className="text-lg font-medium text-muted-foreground mb-2">No contacts yet</p>
+          <p className="text-sm text-muted-foreground max-w-md">
+            Add contacts to track project stakeholders, team members, and external partners
+          </p>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {contacts.map((contact) => (
+            <Card key={contact.id} className="p-5 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-foreground text-lg">
+                      {contact.first_name} {contact.last_name}
+                    </h3>
+                    <Badge variant="outline" className={getTypeColor(contact.type)}>
+                      {TYPE_OPTIONS.find(t => t.value === contact.type)?.label || contact.type}
+                    </Badge>
+                    <Badge variant="outline" className={getStatusColor(contact.status)}>
+                      {STATUS_OPTIONS.find(s => s.value === contact.status)?.label || contact.status}
+                    </Badge>
+                  </div>
+
+                  {(contact.title || contact.company) && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      {contact.title && <span>{contact.title}</span>}
+                      {contact.title && contact.company && <span>•</span>}
+                      {contact.company && (
+                        <div className="flex items-center gap-1">
+                          <Building2 className="h-3 w-3" />
+                          <span>{contact.company}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                    {contact.email && (
+                      <div className="flex items-center gap-1">
+                        <Mail className="h-3 w-3" />
+                        <a href={`mailto:${contact.email}`} className="hover:text-foreground hover:underline">
+                          {contact.email}
+                        </a>
+                      </div>
+                    )}
+                    {contact.phone && (
+                      <div className="flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        <a href={`tel:${contact.phone}`} className="hover:text-foreground hover:underline">
+                          {contact.phone}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {contact.notes && (
+                    <p className="mt-2 text-sm text-muted-foreground">{contact.notes}</p>
+                  )}
+                </div>
+                <div className="flex gap-1">
+                  <PermissionGuard require="edit">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setEditingContact(contact)}
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      title="Edit contact"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </PermissionGuard>
+                  <PermissionGuard require="delete">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setDeletingContact(contact)}
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      title="Delete contact"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </PermissionGuard>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Create Contact Dialog */}
+      <Dialog open={isCreating} onOpenChange={setIsCreating}>
+        <DialogContent className="max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Create New Contact</DialogTitle>
+            <DialogDescription>Add a new contact to your project</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 overflow-y-auto flex-1 px-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="first_name">First Name</Label>
+                <Input
+                  id="first_name"
+                  placeholder="John"
+                  value={newContact.first_name}
+                  onChange={(e) => setNewContact({ ...newContact, first_name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  placeholder="Doe"
+                  value={newContact.last_name}
+                  onChange={(e) => setNewContact({ ...newContact, last_name: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="john.doe@example.com"
+                value={newContact.email}
+                onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+1 (555) 123-4567"
+                value={newContact.phone}
+                onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="company">Company</Label>
+                <Input
+                  id="company"
+                  placeholder="Acme Inc"
+                  value={newContact.company}
+                  onChange={(e) => setNewContact({ ...newContact, company: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  placeholder="Product Manager"
+                  value={newContact.title}
+                  onChange={(e) => setNewContact({ ...newContact, title: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="type">Type</Label>
+              <select
+                id="type"
+                value={newContact.type}
+                onChange={(e) => setNewContact({ ...newContact, type: e.target.value })}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {TYPE_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <textarea
+                id="notes"
+                placeholder="Additional notes about this contact"
+                value={newContact.notes}
+                onChange={(e) => setNewContact({ ...newContact, notes: e.target.value })}
+                rows={3}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setIsCreating(false)}>Cancel</Button>
+            <Button onClick={handleCreateContact} disabled={!newContact.first_name.trim() || !newContact.last_name.trim()}>
+              Create Contact
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Contact Dialog */}
+      <Dialog open={!!editingContact} onOpenChange={() => setEditingContact(null)}>
+        <DialogContent className="max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Edit Contact</DialogTitle>
+            <DialogDescription>Update contact information</DialogDescription>
+          </DialogHeader>
+          {editingContact && (
+            <div className="space-y-4 overflow-y-auto flex-1 px-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-first_name">First Name</Label>
+                  <Input
+                    id="edit-first_name"
+                    value={editingContact.first_name}
+                    onChange={(e) => setEditingContact({ ...editingContact, first_name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-last_name">Last Name</Label>
+                  <Input
+                    id="edit-last_name"
+                    value={editingContact.last_name}
+                    onChange={(e) => setEditingContact({ ...editingContact, last_name: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editingContact.email || ""}
+                  onChange={(e) => setEditingContact({ ...editingContact, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Phone</Label>
+                <Input
+                  id="edit-phone"
+                  type="tel"
+                  value={editingContact.phone || ""}
+                  onChange={(e) => setEditingContact({ ...editingContact, phone: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-company">Company</Label>
+                  <Input
+                    id="edit-company"
+                    value={editingContact.company || ""}
+                    onChange={(e) => setEditingContact({ ...editingContact, company: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title">Title</Label>
+                  <Input
+                    id="edit-title"
+                    value={editingContact.title || ""}
+                    onChange={(e) => setEditingContact({ ...editingContact, title: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-type">Type</Label>
+                  <select
+                    id="edit-type"
+                    value={editingContact.type}
+                    onChange={(e) => setEditingContact({ ...editingContact, type: e.target.value })}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {TYPE_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-status">Status</Label>
+                  <select
+                    id="edit-status"
+                    value={editingContact.status}
+                    onChange={(e) => setEditingContact({ ...editingContact, status: e.target.value })}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {STATUS_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-notes">Notes</Label>
+                <textarea
+                  id="edit-notes"
+                  value={editingContact.notes || ""}
+                  onChange={(e) => setEditingContact({ ...editingContact, notes: e.target.value })}
+                  rows={3}
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setEditingContact(null)}>Cancel</Button>
+            <Button onClick={handleUpdateContact}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingContact} onOpenChange={() => setDeletingContact(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Contact</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &quot;{deletingContact?.first_name} {deletingContact?.last_name}&quot;? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingContact(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteContact}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

@@ -1,0 +1,28 @@
+# FastAPI and server
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.9.0
+pydantic-settings>=2.5.0
+
+# Supabase
+supabase>=2.9.0
+
+# OpenAI embeddings
+openai>=1.51.0
+tiktoken>=0.8.0
+
+# LangChain for text splitting
+langchain>=0.3.7
+langchain-text-splitters>=0.3.2
+
+# Numpy - use version compatible with Python 3.13
+numpy>=2.0.0
+
+# Optional: Cross-encoder for reranking (skip for now, install later if needed)
+# sentence-transformers>=3.2.1
+
+# Utilities
+python-dotenv>=1.0.0
+
+# PDF extraction
+PyMuPDF>=1.24.0

@@ -1,0 +1,1 @@
+#\!/bin/sh\n. "$(dirname "$0")/_/husky.sh"\n\nnpm run typecheck && npm run lint && npm run test
