@@ -1,5 +1,0 @@
-{
-  "buildCommand": "cd level-ops && npm ci && npm run build",
-  "outputDirectory": "level-ops/.next",
-  "installCommand": "cd level-ops && npm ci"
-}
