@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Clock, Shield, TrendingUp, FileCheck, Users } from "lucide-react";
@@ -9,7 +10,16 @@ export default function HomePage() {
       {/* Header */}
       <header className="border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="text-2xl font-bold text-gray-900">Level</div>
+          <Link href="/">
+            <Image
+              src="/logo.png"
+              alt="Vaults"
+              width={120}
+              height={36}
+              priority
+              style={{ width: '120px', height: 'auto' }}
+            />
+          </Link>
           <nav className="flex items-center gap-6">
             <Link href="/pricing" className="text-gray-600 hover:text-gray-900 font-medium">
               Pricing
@@ -17,7 +27,7 @@ export default function HomePage() {
             <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium">
               Sign In
             </Link>
-            <Link href="/login">
+            <Link href="/signup">
               <Button>Get Started</Button>
             </Link>
           </nav>
@@ -34,7 +44,7 @@ export default function HomePage() {
             A premium portfolio console with an acting agent—board-ready updates in minutes, not days.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link href="/login">
+            <Link href="/signup">
               <Button size="lg" className="text-lg px-8">
                 Start Free Trial
               </Button>
@@ -95,7 +105,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                What Level does differently
+                What Vaults does differently
               </h2>
               <div className="space-y-6">
                 <div className="flex gap-4">
@@ -103,7 +113,7 @@ export default function HomePage() {
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-2">Executive-Only Layer</h3>
                     <p className="text-gray-600">
-                      Not another task tool. Level synthesizes milestones, risks, and decisions into board-ready insights.
+                      Not another task tool. Vaults synthesizes milestones, risks, and decisions into board-ready insights.
                     </p>
                   </div>
                 </div>
@@ -146,7 +156,7 @@ export default function HomePage() {
                       <span className="font-semibold">£6,000</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-700">Level cost</span>
+                      <span className="text-gray-700">Vaults cost</span>
                       <span className="font-semibold">£499</span>
                     </div>
                     <div className="border-t border-gray-200 pt-2 flex justify-between">
@@ -250,15 +260,15 @@ export default function HomePage() {
             Ready to reclaim your time?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Join founders and investors who have transformed their board operations with Level.
+            Join founders and investors who have transformed their board operations with Vaults.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link href="/login">
+            <Link href="/signup">
               <Button size="lg" className="text-lg px-8">
                 Start Free Trial
               </Button>
             </Link>
-            <Link href="mailto:hello@level.app">
+            <Link href="mailto:hello@vaults.app">
               <Button size="lg" variant="outline" className="text-lg px-8">
                 Contact Sales
               </Button>
@@ -272,7 +282,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="text-2xl font-bold text-gray-900 mb-4">Level</div>
+              <div className="text-2xl font-bold text-gray-900 mb-4">Vaults</div>
               <p className="text-sm text-gray-600">
                 The private jet of executive portfolio operations.
               </p>
@@ -296,7 +306,7 @@ export default function HomePage() {
               <h4 className="font-semibold text-gray-900 mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>
-                  <a href="mailto:hello@level.app" className="hover:text-gray-900">
+                  <a href="mailto:hello@vaults.app" className="hover:text-gray-900">
                     Contact
                   </a>
                 </li>
@@ -319,7 +329,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-600">
-            {new Date().getFullYear()} Level. All rights reserved.
+            {new Date().getFullYear()} Vaults. All rights reserved.
           </div>
         </div>
       </footer>

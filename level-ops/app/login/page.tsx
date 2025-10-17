@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { SocialButtons } from "@/components/auth/social-buttons";
 
@@ -34,15 +35,18 @@ export default function LoginPage() {
       <div className="w-full max-w-md px-4">
         <div className="mb-10 text-center">
           <div className="mb-6 flex justify-center">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={150}
-              height={45}
-              priority
-              style={{ width: '150px', height: 'auto' }}
-            />
+            <Link href="/">
+              <Image
+                src="/logo-stacked.png"
+                alt="Vaults"
+                width={120}
+                height={120}
+                priority
+                style={{ width: '120px', height: 'auto' }}
+              />
+            </Link>
           </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h1>
           <p className="text-muted-foreground">
             Sign in to your account
           </p>
@@ -126,6 +130,13 @@ export default function LoginPage() {
               : undefined
           }
           />
+
+          <div className="text-center text-sm mt-6">
+            <span className="text-muted-foreground">Don&apos;t have an account? </span>
+            <Link href="/signup" className="text-primary hover:underline font-medium">
+              Sign up
+            </Link>
+          </div>
           </div>
         )}
       </div>
