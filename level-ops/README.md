@@ -150,12 +150,11 @@ public/        # Static assets
 - [Product Strategy](docs/LEVEL_PRODUCT_STRATEGY.md) — Premium positioning, ICPs, success criteria
 - [Architecture](docs/ARCHITECTURE.md) — System diagram, components, data flow
 - [Data Model](docs/DATA_MODEL.md) — Complete schema, tables, indexes, RLS
-- [Permissions & Roles](docs/PERMISSIONS_AND_ROLES.md) — Multi-org model, invitations, roles
 
 ### Implementation Guides
-- [RAG Implementation Plan](docs/RAG_IMPLEMENTATION_PLAN.md) — Hybrid search, retrieval, governance
-- [RAG Implementation Progress](docs/RAG_IMPLEMENTATION_PROGRESS.md) — Current status (Phase D.1 complete)
-- [RAG CopilotKit Integration](docs/RAG_COPILOT_INTEGRATION_PLAN.md) — Agent integration
+- [Deployment Guide](docs/DEPLOYMENT.md) — Complete deployment guide (GitHub, Railway, Vercel)
+- [Permissions System](docs/PERMISSIONS_COMPLETE.md) — RBAC, roles, testing, security
+- [RAG System](docs/RAG_COMPLETE.md) — Document search, hybrid retrieval, CopilotKit integration
 
 ### Security & Trust
 - [SECURITY.md](SECURITY.md) — Security posture, RLS, audit, incident response

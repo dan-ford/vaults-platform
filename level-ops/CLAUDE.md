@@ -76,7 +76,7 @@ ALWAYS USE SUPABASE MCP SERVER
 - `docs/planning/PROGRESS.md`: running checklist of done/blocked/next.
 - `SECURITY.md`: security posture, RLS policies, secrets, audit, incident procedure.
 - `CONTRIBUTING.md`: workflow, commit style, PR checks, branch names.
-- **`PRODUCTION_CONSIDERATIONS.md`**: **CRITICAL** - All production deployment considerations, environment variables, security configurations, and step-by-step deployment checklist. **MUST be reviewed before any production deployment.** All new features with production implications MUST add notes to this document.
+- **`docs/DEPLOYMENT.md`**: **CRITICAL** - Complete production deployment guide (GitHub, Railway, Vercel). Step-by-step procedures, environment variables, security configurations, smoke testing, monitoring, and troubleshooting. **MUST be reviewed before any production deployment.** All new features with production implications MUST add notes to this document.
 
 ---
 
@@ -234,14 +234,15 @@ All dialogs MUST be responsive and scrollable:
 ## PRODUCTION DEPLOYMENT STATUS
 
 ### ✅ DEPLOYED TO PRODUCTION (October 16, 2025)
-### 🚀 LATEST UPDATE (October 17, 2025): Signup Page & Password Validation
+### 🚀 LATEST UPDATE (October 18, 2025): Documentation Consolidation & Cleanup
 
 #### Infrastructure
 - ✅ **GitHub Repository**: https://github.com/dan-ford/vaults-platform
   - Clean repository structure (level-ops/ subdirectory only)
   - All security issues resolved (no exposed API keys)
   - Code pushed to main branch (commit 6130e57)
-  - **Latest feature**: Complete signup flow with real-time password validation
+  - **Latest update**: Documentation consolidated (57→29 files, 49% reduction)
+  - Professional doc structure with 3 comprehensive guides
 
 - ✅ **Railway (RAG Agent Backend)**: https://vaults-agent-production.up.railway.app
   - Python FastAPI service deployed and healthy
@@ -276,12 +277,15 @@ All dialogs MUST be responsive and scrollable:
 3. Configure custom domain (vaults.team)
 4. User acceptance testing
 
-### KEY DOCUMENTATION
-- DEPLOYMENT_CHECKLIST.md (step-by-step with checkboxes)
-- docs/GITHUB_AND_VERCEL_DEPLOYMENT.md (complete 800+ line guide)
-- docs/ENVIRONMENT_VARIABLES.md (all env vars explained)
-- docs/AGENT_DEPLOYMENT.md (Railway deployment instructions)
-- KNOWN_ISSUES.md (npm audit findings - 8 moderate, acceptable)
+### KEY DOCUMENTATION (CONSOLIDATED OCTOBER 2025)
+- **docs/DEPLOYMENT.md** - Complete deployment guide (GitHub, Railway, Vercel, production config)
+- **docs/PERMISSIONS_COMPLETE.md** - RBAC system (roles, testing, RLS, security)
+- **docs/RAG_COMPLETE.md** - Document search (hybrid retrieval, CopilotKit integration)
+- **docs/ENVIRONMENT_VARIABLES.md** - All environment variables explained
+- **docs/ARCHITECTURE.md** - System architecture and data flow
+- **docs/DATA_MODEL.md** - Complete database schema
+- **SECURITY.md** - Security posture and incident response
+- **KNOWN_ISSUES.md** - npm audit findings (8 moderate, acceptable)
 
 ### MCP SERVERS AVAILABLE
 - `mcp__github__*` - Repository and code management
