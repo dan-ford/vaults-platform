@@ -24,10 +24,10 @@ export type Database = {
           created_at: string
           id: string
           metadata: Json | null
-          org_id: string | null
+          org_id: string
           resource_id: string | null
           resource_type: string
-          tenant_id: string
+          tenant_id: string | null
         }
         Insert: {
           action: string
@@ -38,10 +38,10 @@ export type Database = {
           created_at?: string
           id?: string
           metadata?: Json | null
-          org_id?: string | null
+          org_id: string
           resource_id?: string | null
           resource_type: string
-          tenant_id: string
+          tenant_id?: string | null
         }
         Update: {
           action?: string
@@ -52,10 +52,10 @@ export type Database = {
           created_at?: string
           id?: string
           metadata?: Json | null
-          org_id?: string | null
+          org_id?: string
           resource_id?: string | null
           resource_type?: string
-          tenant_id?: string
+          tenant_id?: string | null
         }
         Relationships: [
           {
@@ -74,16 +74,75 @@ export type Database = {
           },
         ]
       }
+      board_packs: {
+        Row: {
+          agenda: Json
+          approved_by: string | null
+          attendees: Json | null
+          created_at: string
+          created_by: string
+          hash: string | null
+          id: string
+          meeting_date: string
+          metadata: Json | null
+          org_id: string
+          pdf_url: string | null
+          published_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agenda?: Json
+          approved_by?: string | null
+          attendees?: Json | null
+          created_at?: string
+          created_by: string
+          hash?: string | null
+          id?: string
+          meeting_date: string
+          metadata?: Json | null
+          org_id: string
+          pdf_url?: string | null
+          published_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agenda?: Json
+          approved_by?: string | null
+          attendees?: Json | null
+          created_at?: string
+          created_by?: string
+          hash?: string | null
+          id?: string
+          meeting_date?: string
+          metadata?: Json | null
+          org_id?: string
+          pdf_url?: string | null
+          published_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "board_packs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           content: string
           created_at: string
           created_by: string
           id: string
-          org_id: string | null
+          org_id: string
           resource_id: string
           resource_type: string
-          tenant_id: string
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -91,10 +150,10 @@ export type Database = {
           created_at?: string
           created_by: string
           id?: string
-          org_id?: string | null
+          org_id: string
           resource_id: string
           resource_type: string
-          tenant_id: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -102,10 +161,10 @@ export type Database = {
           created_at?: string
           created_by?: string
           id?: string
-          org_id?: string | null
+          org_id?: string
           resource_id?: string
           resource_type?: string
-          tenant_id?: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -127,6 +186,7 @@ export type Database = {
       }
       contacts: {
         Row: {
+          avatar_url: string | null
           company: string | null
           created_at: string
           created_by: string
@@ -138,13 +198,15 @@ export type Database = {
           notes: string | null
           org_id: string
           phone: string | null
+          roles: Json | null
           status: string
-          tenant_id: string
+          tenant_id: string | null
           title: string | null
-          type: string
+          type: string | null
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
           company?: string | null
           created_at?: string
           created_by: string
@@ -156,13 +218,15 @@ export type Database = {
           notes?: string | null
           org_id: string
           phone?: string | null
+          roles?: Json | null
           status?: string
-          tenant_id: string
+          tenant_id?: string | null
           title?: string | null
-          type?: string
+          type?: string | null
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
           company?: string | null
           created_at?: string
           created_by?: string
@@ -174,10 +238,11 @@ export type Database = {
           notes?: string | null
           org_id?: string
           phone?: string | null
+          roles?: Json | null
           status?: string
-          tenant_id?: string
+          tenant_id?: string | null
           title?: string | null
-          type?: string
+          type?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -197,6 +262,44 @@ export type Database = {
           },
         ]
       }
+      decision_approvals: {
+        Row: {
+          approved_at: string | null
+          approver_id: string
+          created_at: string
+          decision_id: string
+          id: string
+          notes: string | null
+          status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approver_id: string
+          created_at?: string
+          decision_id: string
+          id?: string
+          notes?: string | null
+          status: string
+        }
+        Update: {
+          approved_at?: string | null
+          approver_id?: string
+          created_at?: string
+          decision_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_approvals_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "decisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       decisions: {
         Row: {
           alternatives_considered: string | null
@@ -208,10 +311,10 @@ export type Database = {
           decision: string
           id: string
           metadata: Json | null
-          org_id: string | null
+          org_id: string
           rationale: string | null
           status: string
-          tenant_id: string
+          tenant_id: string | null
           title: string
           updated_at: string
         }
@@ -225,10 +328,10 @@ export type Database = {
           decision: string
           id?: string
           metadata?: Json | null
-          org_id?: string | null
+          org_id: string
           rationale?: string | null
           status?: string
-          tenant_id: string
+          tenant_id?: string | null
           title: string
           updated_at?: string
         }
@@ -242,10 +345,10 @@ export type Database = {
           decision?: string
           id?: string
           metadata?: Json | null
-          org_id?: string | null
+          org_id?: string
           rationale?: string | null
           status?: string
-          tenant_id?: string
+          tenant_id?: string | null
           title?: string
           updated_at?: string
         }
@@ -278,10 +381,10 @@ export type Database = {
           id: string
           lang: string | null
           metadata: Json | null
-          org_id: string | null
+          org_id: string
           page: number | null
           section_path: string | null
-          tenant_id: string
+          tenant_id: string | null
           token_count: number | null
           tsv: unknown | null
           updated_at: string
@@ -298,10 +401,10 @@ export type Database = {
           id?: string
           lang?: string | null
           metadata?: Json | null
-          org_id?: string | null
+          org_id: string
           page?: number | null
           section_path?: string | null
-          tenant_id: string
+          tenant_id?: string | null
           token_count?: number | null
           tsv?: unknown | null
           updated_at?: string
@@ -318,10 +421,10 @@ export type Database = {
           id?: string
           lang?: string | null
           metadata?: Json | null
-          org_id?: string | null
+          org_id?: string
           page?: number | null
           section_path?: string | null
-          tenant_id?: string
+          tenant_id?: string | null
           token_count?: number | null
           tsv?: unknown | null
           updated_at?: string
@@ -351,6 +454,63 @@ export type Database = {
           },
         ]
       }
+      document_sections: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          display_order: number
+          document_id: string
+          id: string
+          metadata: Json | null
+          org_id: string
+          questions_answers: Json | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          display_order?: number
+          document_id: string
+          id?: string
+          metadata?: Json | null
+          org_id: string
+          questions_answers?: Json | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          display_order?: number
+          document_id?: string
+          id?: string
+          metadata?: Json | null
+          org_id?: string
+          questions_answers?: Json | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_sections_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_sections_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           category: string
@@ -364,7 +524,7 @@ export type Database = {
           mime_type: string
           name: string
           org_id: string | null
-          tenant_id: string
+          tenant_id: string | null
           text_content: string | null
           updated_at: string
         }
@@ -380,7 +540,7 @@ export type Database = {
           mime_type?: string
           name: string
           org_id?: string | null
-          tenant_id: string
+          tenant_id?: string | null
           text_content?: string | null
           updated_at?: string
         }
@@ -396,7 +556,7 @@ export type Database = {
           mime_type?: string
           name?: string
           org_id?: string | null
-          tenant_id?: string
+          tenant_id?: string | null
           text_content?: string | null
           updated_at?: string
         }
@@ -417,6 +577,192 @@ export type Database = {
           },
         ]
       }
+      financial_snapshots: {
+        Row: {
+          arr: number | null
+          burn: number | null
+          cash: number | null
+          created_at: string
+          created_by: string
+          gross_margin: number | null
+          id: string
+          notes: string | null
+          org_id: string
+          period: string
+          revenue: number | null
+          runway_days: number | null
+          source_ref: string | null
+          updated_at: string
+        }
+        Insert: {
+          arr?: number | null
+          burn?: number | null
+          cash?: number | null
+          created_at?: string
+          created_by: string
+          gross_margin?: number | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          period: string
+          revenue?: number | null
+          runway_days?: number | null
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Update: {
+          arr?: number | null
+          burn?: number | null
+          cash?: number | null
+          created_at?: string
+          created_by?: string
+          gross_margin?: number | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          period?: string
+          revenue?: number | null
+          runway_days?: number | null
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_snapshots_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_snapshots_source_ref_fkey"
+            columns: ["source_ref"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpi_measurements: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          kpi_id: string
+          org_id: string
+          period: string
+          source_ref: string | null
+          updated_at: string
+          value: number
+          variance_note: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          kpi_id: string
+          org_id: string
+          period: string
+          source_ref?: string | null
+          updated_at?: string
+          value: number
+          variance_note?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          kpi_id?: string
+          org_id?: string
+          period?: string
+          source_ref?: string | null
+          updated_at?: string
+          value?: number
+          variance_note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_measurements_kpi_id_fkey"
+            columns: ["kpi_id"]
+            isOneToOne: false
+            referencedRelation: "kpis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_measurements_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_measurements_source_ref_fkey"
+            columns: ["source_ref"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpis: {
+        Row: {
+          cadence: string
+          created_at: string
+          created_by: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          name: string
+          org_id: string
+          owner_id: string | null
+          target: number | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          cadence?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name: string
+          org_id: string
+          owner_id?: string | null
+          target?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cadence?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name?: string
+          org_id?: string
+          owner_id?: string | null
+          target?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpis_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestones: {
         Row: {
           created_at: string
@@ -425,10 +771,10 @@ export type Database = {
           id: string
           metadata: Json | null
           name: string
-          org_id: string | null
+          org_id: string
           status: string
           target_date: string | null
-          tenant_id: string
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -438,10 +784,10 @@ export type Database = {
           id?: string
           metadata?: Json | null
           name: string
-          org_id?: string | null
+          org_id: string
           status?: string
           target_date?: string | null
-          tenant_id: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -451,10 +797,10 @@ export type Database = {
           id?: string
           metadata?: Json | null
           name?: string
-          org_id?: string | null
+          org_id?: string
           status?: string
           target_date?: string | null
-          tenant_id?: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -512,6 +858,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      okrs: {
+        Row: {
+          created_at: string
+          created_by: string
+          due_date: string | null
+          id: string
+          key_result: string
+          metadata: Json | null
+          notes: string | null
+          objective: string
+          org_id: string
+          owner_id: string | null
+          progress: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          due_date?: string | null
+          id?: string
+          key_result: string
+          metadata?: Json | null
+          notes?: string | null
+          objective: string
+          org_id: string
+          owner_id?: string | null
+          progress?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          due_date?: string | null
+          id?: string
+          key_result?: string
+          metadata?: Json | null
+          notes?: string | null
+          objective?: string
+          org_id?: string
+          owner_id?: string | null
+          progress?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okrs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       org_invitations: {
         Row: {
@@ -694,14 +1096,22 @@ export type Database = {
       }
       reports: {
         Row: {
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
+          content_hash: string | null
           content_html: string | null
           content_markdown: string
           created_at: string | null
           created_by: string
           id: string
+          is_published: boolean | null
+          metadata: Json | null
           org_id: string
           period_end: string
           period_start: string
+          published_at: string | null
+          rejection_reason: string | null
           stats: Json | null
           tenant_id: string | null
           title: string
@@ -709,14 +1119,22 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          content_hash?: string | null
           content_html?: string | null
           content_markdown: string
           created_at?: string | null
           created_by: string
           id?: string
+          is_published?: boolean | null
+          metadata?: Json | null
           org_id: string
           period_end: string
           period_start: string
+          published_at?: string | null
+          rejection_reason?: string | null
           stats?: Json | null
           tenant_id?: string | null
           title: string
@@ -724,14 +1142,22 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          content_hash?: string | null
           content_html?: string | null
           content_markdown?: string
           created_at?: string | null
           created_by?: string
           id?: string
+          is_published?: boolean | null
+          metadata?: Json | null
           org_id?: string
           period_end?: string
           period_start?: string
+          published_at?: string | null
+          rejection_reason?: string | null
           stats?: Json | null
           tenant_id?: string | null
           title?: string
@@ -755,6 +1181,71 @@ export type Database = {
           },
         ]
       }
+      requests: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          description: string
+          due_date: string | null
+          id: string
+          metadata: Json | null
+          org_id: string
+          priority: string
+          requested_by: string
+          responded_at: string | null
+          responded_by: string | null
+          response: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          description: string
+          due_date?: string | null
+          id?: string
+          metadata?: Json | null
+          org_id: string
+          priority?: string
+          requested_by: string
+          responded_at?: string | null
+          responded_by?: string | null
+          response?: string | null
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string
+          due_date?: string | null
+          id?: string
+          metadata?: Json | null
+          org_id?: string
+          priority?: string
+          requested_by?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          response?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risks: {
         Row: {
           created_at: string
@@ -764,11 +1255,11 @@ export type Database = {
           impact: string
           metadata: Json | null
           mitigation_plan: string | null
-          org_id: string | null
+          org_id: string
           owner_id: string | null
           probability: string
           status: string
-          tenant_id: string
+          tenant_id: string | null
           title: string
           updated_at: string
         }
@@ -780,11 +1271,11 @@ export type Database = {
           impact: string
           metadata?: Json | null
           mitigation_plan?: string | null
-          org_id?: string | null
+          org_id: string
           owner_id?: string | null
           probability: string
           status?: string
-          tenant_id: string
+          tenant_id?: string | null
           title: string
           updated_at?: string
         }
@@ -796,11 +1287,11 @@ export type Database = {
           impact?: string
           metadata?: Json | null
           mitigation_plan?: string | null
-          org_id?: string | null
+          org_id?: string
           owner_id?: string | null
           probability?: string
           status?: string
-          tenant_id?: string
+          tenant_id?: string | null
           title?: string
           updated_at?: string
         }
@@ -1206,6 +1697,56 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          org_id: string
+          plan_tier: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          org_id: string
+          plan_tier: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          org_id?: string
+          plan_tier?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assignee_id: string | null
@@ -1216,10 +1757,10 @@ export type Database = {
           id: string
           metadata: Json | null
           milestone_id: string | null
-          org_id: string | null
+          org_id: string
           priority: string | null
           status: string
-          tenant_id: string
+          tenant_id: string | null
           title: string
           updated_at: string
         }
@@ -1232,10 +1773,10 @@ export type Database = {
           id?: string
           metadata?: Json | null
           milestone_id?: string | null
-          org_id?: string | null
+          org_id: string
           priority?: string | null
           status?: string
-          tenant_id: string
+          tenant_id?: string | null
           title: string
           updated_at?: string
         }
@@ -1248,10 +1789,10 @@ export type Database = {
           id?: string
           metadata?: Json | null
           milestone_id?: string | null
-          org_id?: string | null
+          org_id?: string
           priority?: string | null
           status?: string
-          tenant_id?: string
+          tenant_id?: string | null
           title?: string
           updated_at?: string
         }
