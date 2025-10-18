@@ -64,14 +64,23 @@ Required variables (see `.env.example`):
 - **White-Label Branding**: Custom logos, brand colors with WCAG 2.2 AA validation
 - **Module Toggles**: Enable/disable features per vault (Tasks, Milestones, Risks, etc.)
 
-### Collaboration Tools
+### Executive Layer (New - October 2025)
+- **Vault Profile**: Organization home with mission/vision/values, OKRs, and recent activity
+- **Metrics**: KPI tracking with trend indicators and target monitoring
+- **Finance**: Monthly financial snapshots (ARR, revenue, cash, burn, runway)
+- **Reports**: Executive summaries with multi-stage approval workflow and SHA-256 hashing
+- **Packs**: Immutable board pack generation with agenda builder and attendee management
+- **Requests**: Investor Q&A workflow with response tracking and notifications
+- **Governance**: Combined Decisions + Risks with multi-signature approval workflow
+- **Documents**: PDF library with sections and inline Q&A
+- **Members**: Team management (relabeled from Contacts)
+- **Dashboard**: Cross-vault portfolio overview (top navigation)
+
+### Collaboration Tools (Legacy)
 - **Tasks**: Full CRUD with status workflow (todo, in_progress, blocked, done, archived)
 - **Milestones**: Project milestones with progress tracking
 - **Risks**: Risk identification with impact/probability matrix
-- **Documents**: PDF upload with AI-powered text extraction and search
 - **Decisions**: Architecture Decision Records (ADRs) with rationale tracking
-- **Contacts**: Stakeholder management with type and status tracking
-- **Reports**: Weekly/monthly executive summaries with markdown export
 
 ### Secrets Module (Premium)
 - **Trade Secret Management**: Version-controlled secrets with immutable snapshots
@@ -148,6 +157,7 @@ public/        # Static assets
 
 ### Product & Strategy
 - [Product Strategy](docs/LEVEL_PRODUCT_STRATEGY.md) — Premium positioning, ICPs, success criteria
+- **[Executive Layer Module Plan](REVISED_MODULE_PLAN.md)** — Implementation status of executive layer transformation (COMPLETE)
 - [Architecture](docs/ARCHITECTURE.md) — System diagram, components, data flow
 - [Data Model](docs/DATA_MODEL.md) — Complete schema, tables, indexes, RLS
 

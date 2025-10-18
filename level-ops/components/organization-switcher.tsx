@@ -1,16 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useOrganization } from "@/lib/context/organization-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, Check, Building2 } from "lucide-react";
 import { terms } from "@/lib/config/branding";
+import { useFeatureFlag } from "@/lib/hooks/use-feature-flag";
 
 export function OrganizationSwitcher() {
   const { currentOrg, organizations, setCurrentOrg, isLoading } =
     useOrganization();
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const executiveLayerEnabled = useFeatureFlag('executive_layer_v2');
 
   if (isLoading) {
     return (
@@ -65,6 +69,9 @@ export function OrganizationSwitcher() {
                 onClick={() => {
                   setCurrentOrg(org.id);
                   setIsOpen(false);
+                  // Redirect to vault home page after switching
+                  const targetPage = executiveLayerEnabled ? '/vault-profile' : '/dashboard';
+                  router.push(targetPage);
                 }}
                 className="flex w-full items-center justify-between gap-3 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
               >

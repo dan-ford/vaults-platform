@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Building2, Bell, Settings, LogOut, Menu, X, Shield, Search } from "lucide-react";
+import { Bell, Settings, LogOut, Menu, X, Shield, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useOrganization } from "@/lib/context/organization-context";
@@ -81,18 +81,6 @@ export function UserMenu() {
         setIsOpen(false);
       },
       mobileOnly: true, // Only show on mobile
-    },
-    {
-      label: "Organisation Profile",
-      icon: Building2,
-      onClick: () => {
-        if (currentOrg?.id) {
-          router.push(`/vaults/${currentOrg.id}/profile`);
-        } else {
-          router.push("/settings");
-        }
-        setIsOpen(false);
-      },
     },
     {
       label: "Notifications",

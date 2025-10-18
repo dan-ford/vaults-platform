@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, FileText, Pencil, Trash2, Eye } from "lucide-react";
+import { Plus, FileText, Pencil, Trash2, Eye, CheckCircle2, XCircle, Users, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from "@/lib/supabase/database.types";
 import { useOrganization } from "@/lib/context/organization-context";
@@ -20,6 +20,17 @@ import { getCreatePermissionError, getEditPermissionError, getDeletePermissionEr
 import { LoadingState } from "@/components/error-states";
 
 type Decision = Tables<"decisions">;
+type DecisionApproval = Tables<"decision_approvals">;
+
+type OrgMember = {
+  user_id: string;
+  role: string;
+  profiles: {
+    email: string;
+    first_name: string | null;
+    last_name: string | null;
+  };
+};
 
 const STATUS_OPTIONS = [
   { value: "proposed", label: "Proposed", color: "bg-primary/10 text-primary border-primary/20" },
@@ -43,10 +54,24 @@ export default function DecisionsPage() {
   const [editingDecision, setEditingDecision] = useState<Decision | null>(null);
   const [deletingDecision, setDeletingDecision] = useState<Decision | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Approval workflow state
+  const [managingApprovals, setManagingApprovals] = useState<Decision | null>(null);
+  const [approvals, setApprovals] = useState<Record<string, DecisionApproval[]>>({});
+  const [members, setMembers] = useState<OrgMember[]>([]);
+  const [selectedApprovers, setSelectedApprovers] = useState<string[]>([]);
+  const [approvingDecision, setApprovingDecision] = useState<{ decision: Decision; approval: DecisionApproval } | null>(null);
+  const [approvalNotes, setApprovalNotes] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const supabase = createClient();
   const { currentOrg } = useOrganization();
   const { logAgentAction } = useAuditLog();
   const { hasPermission, role, canEdit, canDelete, isViewer } = usePermissions();
+
+  const isOwner = role === "OWNER";
+  const isAdmin = role === "ADMIN";
+  const canApprove = isOwner || isAdmin;
 
   // Load decisions function
   const loadDecisions = async () => {
@@ -436,6 +461,190 @@ export default function DecisionsPage() {
     }
   };
 
+  // ===== APPROVAL WORKFLOW FUNCTIONS =====
+
+  // Load approvals for all decisions
+  const loadApprovals = async () => {
+    if (!currentOrg) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("decision_approvals")
+        .select("*")
+        .in("decision_id", decisions.map(d => d.id));
+
+      if (error) {
+        console.error("Error loading approvals:", error);
+        return;
+      }
+
+      if (data) {
+        const approvalsByDecision: Record<string, DecisionApproval[]> = {};
+        data.forEach(approval => {
+          if (!approvalsByDecision[approval.decision_id]) {
+            approvalsByDecision[approval.decision_id] = [];
+          }
+          approvalsByDecision[approval.decision_id].push(approval as DecisionApproval);
+        });
+        setApprovals(approvalsByDecision);
+      }
+    } catch (error) {
+      console.error("Error in loadApprovals:", error);
+    }
+  };
+
+  // Load org members
+  const loadMembers = async () => {
+    if (!currentOrg) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("org_memberships")
+        .select("user_id, role, profiles(email, first_name, last_name)")
+        .eq("org_id", currentOrg.id);
+
+      if (error) {
+        console.error("Error loading members:", error);
+        return;
+      }
+
+      if (data) {
+        setMembers(data as unknown as OrgMember[]);
+      }
+    } catch (error) {
+      console.error("Error in loadMembers:", error);
+    }
+  };
+
+  // Request approvals from selected members
+  const handleRequestApprovals = async () => {
+    if (!managingApprovals || !currentOrg || selectedApprovers.length === 0) return;
+
+    try {
+      const approvalsToCreate = selectedApprovers.map(approverId => ({
+        decision_id: managingApprovals.id,
+        approver_id: approverId,
+        status: "pending",
+      }));
+
+      const { error } = await supabase
+        .from("decision_approvals")
+        .insert(approvalsToCreate);
+
+      if (error) throw error;
+
+      setSelectedApprovers([]);
+      await loadApprovals();
+    } catch (error) {
+      console.error("Error requesting approvals:", error);
+      alert("Failed to request approvals. Please try again.");
+    }
+  };
+
+  // Approve decision
+  const handleApprove = async () => {
+    if (!approvingDecision) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("decision_approvals")
+        .update({
+          status: "approved",
+          notes: approvalNotes || null,
+          approved_at: new Date().toISOString(),
+        })
+        .eq("id", approvingDecision.approval.id);
+
+      if (error) throw error;
+
+      setApprovingDecision(null);
+      setApprovalNotes("");
+      await loadApprovals();
+    } catch (error) {
+      console.error("Error approving decision:", error);
+      alert("Failed to approve decision. Please try again.");
+    }
+  };
+
+  // Reject decision
+  const handleReject = async () => {
+    if (!approvingDecision) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("decision_approvals")
+        .update({
+          status: "rejected",
+          notes: approvalNotes || null,
+          approved_at: new Date().toISOString(),
+        })
+        .eq("id", approvingDecision.approval.id);
+
+      if (error) throw error;
+
+      setApprovingDecision(null);
+      setApprovalNotes("");
+      await loadApprovals();
+    } catch (error) {
+      console.error("Error rejecting decision:", error);
+      alert("Failed to reject decision. Please try again.");
+    }
+  };
+
+  // Get approval summary for a decision
+  const getApprovalSummary = (decisionId: string) => {
+    const decisionApprovals = approvals[decisionId] || [];
+    const approved = decisionApprovals.filter(a => a.status === "approved").length;
+    const rejected = decisionApprovals.filter(a => a.status === "rejected").length;
+    const pending = decisionApprovals.filter(a => a.status === "pending").length;
+    const total = decisionApprovals.length;
+
+    return { approved, rejected, pending, total };
+  };
+
+  // Get member name helper
+  const getMemberName = (userId: string) => {
+    const member = members.find(m => m.user_id === userId);
+    if (!member) return "Unknown";
+
+    const profile = member.profiles;
+    if (profile.first_name || profile.last_name) {
+      return `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+    }
+    return profile.email;
+  };
+
+  // Load approvals when decisions change
+  useEffect(() => {
+    if (decisions.length > 0) {
+      loadApprovals();
+    }
+  }, [decisions.length]);
+
+  // Load members on mount
+  useEffect(() => {
+    if (currentOrg) {
+      loadMembers();
+    }
+  }, [currentOrg?.id]);
+
+  // Load current user ID
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    loadCurrentUser();
+  }, []);
+
   if (isLoading) {
     return <LoadingState message="Loading decisions..." />;
   }
@@ -474,11 +683,23 @@ export default function DecisionsPage() {
             <Card key={dec.id} className="p-5 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <h3 className="font-semibold text-foreground text-lg">{dec.title}</h3>
                     <Badge variant="outline" className={getStatusColor(dec.status)}>
                       {STATUS_OPTIONS.find(s => s.value === dec.status)?.label || dec.status}
                     </Badge>
+                    {(() => {
+                      const summary = getApprovalSummary(dec.id);
+                      if (summary.total > 0) {
+                        return (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            <Users className="h-3 w-3 mr-1" />
+                            {summary.approved}/{summary.total} Approved
+                          </Badge>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                   <div className="space-y-3">
                     <div>
@@ -507,6 +728,17 @@ export default function DecisionsPage() {
                   </div>
                 </div>
                 <div className="flex gap-1">
+                  {canApprove && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setManagingApprovals(dec)}
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      aria-label="Manage approvals"
+                    >
+                      <Users className="h-4 w-4" />
+                    </Button>
+                  )}
                   <PermissionGuard require="edit">
                     <Button
                       size="icon"
@@ -696,6 +928,201 @@ export default function DecisionsPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeletingDecision(null)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDeleteDecision}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Approvals Dialog */}
+      <Dialog open={!!managingApprovals} onOpenChange={(open) => {
+        if (!open) {
+          setManagingApprovals(null);
+          setSelectedApprovers([]);
+        }
+      }}>
+        <DialogContent className="max-h-[90vh] flex flex-col max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Manage Approvals: {managingApprovals?.title}</DialogTitle>
+            <DialogDescription>
+              Request approvals from team members for this decision
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 overflow-y-auto flex-1 px-1">
+            {/* Request New Approvals */}
+            <Card className="p-4 bg-slate-50 border-2 border-dashed">
+              <div className="space-y-3">
+                <Label>Request Approvals From</Label>
+                <div className="space-y-2">
+                  {members.map((member) => {
+                    const alreadyRequested = managingApprovals && approvals[managingApprovals.id]?.some(
+                      a => a.approver_id === member.user_id
+                    );
+                    return (
+                      <div key={member.user_id} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id={`approver-${member.user_id}`}
+                          checked={selectedApprovers.includes(member.user_id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedApprovers([...selectedApprovers, member.user_id]);
+                            } else {
+                              setSelectedApprovers(selectedApprovers.filter(id => id !== member.user_id));
+                            }
+                          }}
+                          disabled={alreadyRequested}
+                          className="h-4 w-4"
+                        />
+                        <label htmlFor={`approver-${member.user_id}`} className="text-sm flex-1">
+                          {getMemberName(member.user_id)} ({member.role})
+                          {alreadyRequested && (
+                            <span className="text-muted-foreground ml-2">(Already requested)</span>
+                          )}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+                <Button
+                  onClick={handleRequestApprovals}
+                  disabled={selectedApprovers.length === 0}
+                  size="sm"
+                >
+                  Request Approvals ({selectedApprovers.length})
+                </Button>
+              </div>
+            </Card>
+
+            {/* Current Approvals */}
+            {managingApprovals && approvals[managingApprovals.id]?.length > 0 ? (
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">Current Approvals</h4>
+                {approvals[managingApprovals.id].map((approval) => {
+                  const isCurrentUserApprover = currentUserId && approval.approver_id === currentUserId;
+
+                  return (
+                    <Card key={approval.id} className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <p className="font-medium text-sm">
+                              {getMemberName(approval.approver_id)}
+                            </p>
+                            {approval.status === "approved" && (
+                              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Approved
+                              </Badge>
+                            )}
+                            {approval.status === "rejected" && (
+                              <Badge variant="outline" className="bg-red-100 text-red-700 border-red-300">
+                                <XCircle className="h-3 w-3 mr-1" />
+                                Rejected
+                              </Badge>
+                            )}
+                            {approval.status === "pending" && (
+                              <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300">
+                                <Clock className="h-3 w-3 mr-1" />
+                                Pending
+                              </Badge>
+                            )}
+                          </div>
+                          {approval.notes && (
+                            <p className="text-sm text-muted-foreground">
+                              Note: {approval.notes}
+                            </p>
+                          )}
+                          {approval.approved_at && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {approval.status === "approved" ? "Approved" : "Rejected"} on {formatDate(approval.approved_at)}
+                            </p>
+                          )}
+                        </div>
+                        {isCurrentUserApprover && approval.status === "pending" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setApprovingDecision({ decision: managingApprovals, approval })}
+                          >
+                            Review
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                <p>No approvals requested yet</p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setManagingApprovals(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Approve/Reject Dialog */}
+      <Dialog open={!!approvingDecision} onOpenChange={(open) => {
+        if (!open) {
+          setApprovingDecision(null);
+          setApprovalNotes("");
+        }
+      }}>
+        <DialogContent className="max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Review Decision</DialogTitle>
+            <DialogDescription>
+              Approve or reject this decision with optional notes
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 overflow-y-auto flex-1 px-1">
+            {approvingDecision && (
+              <>
+                <div className="bg-slate-50 border border-slate-200 rounded-md p-3">
+                  <Label className="text-xs text-muted-foreground">Decision</Label>
+                  <p className="font-medium text-sm mt-1">
+                    {approvingDecision.decision.title}
+                  </p>
+                  <p className="text-sm mt-2">
+                    {approvingDecision.decision.decision}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="approval-notes">Notes (Optional)</Label>
+                  <textarea
+                    id="approval-notes"
+                    placeholder="Add your notes or feedback..."
+                    value={approvalNotes}
+                    onChange={(e) => setApprovalNotes(e.target.value)}
+                    rows={4}
+                    className="flex w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => {
+              setApprovingDecision(null);
+              setApprovalNotes("");
+            }}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleReject}>
+              <XCircle className="h-4 w-4 mr-2" />
+              Reject
+            </Button>
+            <Button onClick={handleApprove} className="bg-green-600 hover:bg-green-700">
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Approve
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -683,9 +683,9 @@ export default function ContactsPage() {
       {/* Simplified header */}
       <header className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight truncate">Contacts</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight truncate">Members</h1>
           <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-            {filteredContacts.length} {filteredContacts.length === 1 ? "contact" : "contacts"}
+            {filteredContacts.length} {filteredContacts.length === 1 ? "member" : "members"}
           </p>
         </div>
         <div className="flex items-center gap-2">

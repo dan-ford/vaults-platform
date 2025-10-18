@@ -545,6 +545,125 @@ Every page follows this consistent pattern:
 - **ADMIN**: Full CRUD access, organization settings access
 - **OWNER**: Equivalent to ADMIN
 
+### Phase I (Executive Layer Transformation) - ✅ PHASE 1B COMPLETE
+**Status:** ✅ PHASE 1B COMPLETE (October 18, 2025)
+**Strategic Goal:** Transform VAULTS into executive and investor communications platform
+
+#### Phase 1A: Executive Core Foundation (COMPLETE - October 2025)
+- [x] **Feature flag system** (`executive_layer_v2`)
+  - Created `use-feature-flag.ts` hook for checking flags
+  - Flags stored in `organizations.settings.modules` JSONB column
+  - All new modules protected by feature flag
+- [x] **Database migrations** (6 new tables):
+  - `okrs` - Objectives and key results
+  - `kpis` - Key performance indicators
+  - `kpi_measurements` - Time-series KPI data
+  - `financial_snapshots` - Monthly financial metrics
+  - `board_packs` - Immutable board pack records
+  - `decision_approvals` - Multi-signature approval workflow
+- [x] **Metrics module** (`/metrics`):
+  - KPI CRUD with display order
+  - Measurement entry with period and variance notes
+  - Trend indicators (up/down/flat) based on target
+  - Cards showing latest value, target, and last 12 periods
+  - Realtime subscriptions for live updates
+  - Feature flag protected (executive_layer_v2)
+- [x] **Finance module** (`/finance`):
+  - Financial snapshot CRUD (ARR, revenue, gross margin, cash, burn, runway)
+  - Month-over-month comparison with variance indicators
+  - Historical snapshots grid (last 12 months)
+  - Realtime subscriptions for live updates
+  - Feature flag protected (executive_layer_v2)
+
+#### Phase 1B: Navigation & Consolidation (COMPLETE - October 18, 2025)
+- [x] **Governance module** (`/governance`):
+  - Created new tabbed page combining Decisions and Risks
+  - Tabs component (`components/ui/tabs.tsx`) using Radix UI
+  - Decisions tab: Shows recent decisions with status badges, links to full /decisions page
+  - Risks tab: Shows recent risks with impact/probability, links to full /risks page
+  - Realtime subscriptions for both tables
+  - Auto-refresh on visibility change
+  - Module visibility checks (both decisions AND risks modules must be enabled)
+- [x] **Dashboard moved to top navigation**:
+  - Added LayoutDashboard icon to top nav in `app/(dashboard)/layout.tsx`
+  - Dashboard now represents cross-vault portfolio overview
+  - Removed from left sidebar (bottom-nav.tsx)
+  - Icon positioned next to org switcher for clear hierarchy
+- [x] **Navigation refinement**:
+  - Contacts relabeled to "Members" in navigation (bottom-nav.tsx line 67-71)
+  - Tasks archived from navigation (hidden when executive_layer_v2 enabled)
+  - Milestones archived from navigation
+  - Left sidebar now exactly 10 vault-specific modules
+  - Top nav contains cross-vault/global functions
+- [x] **Organization Profile removed from hamburger menu**:
+  - Removed "Organization Profile" menu item
+  - Will be replaced by vault-level Profile module (Phase 1C)
+  - User profile remains accessible via Settings page
+
+#### Phase 1C: Vault Profile Module (NEXT - Target: October 25, 2025)
+- [ ] **Vault Profile page** (`/vault-profile` or rename /profile):
+  - Org info section (mission, vision, values from vault_profiles table)
+  - OKR section (objectives and key results with progress tracking)
+  - Recent activity feed (last 10 actions across all modules)
+  - Landing page when selecting a vault from org switcher
+  - NOTE: Current /profile is user profile, need to decide on naming
+  - Options: (1) /vault-profile for org home, keep /profile for user OR (2) /me for user, /profile for org
+
+#### Phase 1D: Executive Enhancements (Target: November 1, 2025)
+- [ ] **Reports enhancement** - Add approval workflow
+  - Add approval_status, approved_by, approved_at columns
+  - Implement approve/reject UI in Reports page
+  - Add SHA256 hashing on approval for immutability
+  - Store hash in database for verification
+- [ ] **Packs module** (`/packs`) - Board pack generation
+  - Create packs page with pack generation UI
+  - Select reports, KPIs, and financial snapshots to include
+  - Generate PDF bundle (explore jsPDF or similar)
+  - Add SHA256 hashing of entire pack
+  - Store metadata in board_packs table
+- [ ] **Requests module** (`/requests`) - Investor Q&A flow
+  - Create requests table (if not exists)
+  - Build request/response interface
+  - Status workflow (pending, responded, archived)
+  - Assign requests to team members
+  - Track response time metrics
+
+#### Phase 2: Governance & Documents (Target: November 4-11, 2025)
+- [ ] **Governance enhancement** - Decision approvals
+  - Multi-signature approval workflow for decisions
+  - Use decision_approvals table
+  - Track who approved and when
+  - Required approver count setting
+- [ ] **Documents enhancement** - Sections and Q&A
+  - Create document_sections table
+  - Implement section CRUD (add/edit/delete sections within documents)
+  - Add inline Q&A feature for each section
+  - Track questions and answers per section
+
+#### Current Navigation Structure (October 18, 2025)
+**Top Navigation (Cross-Vault/Global):**
+- Dashboard icon (cross-vault portfolio overview)
+- Organization Switcher
+- Search icon
+- AI Assistant toggle
+- User menu (Profile, Notifications, Settings, Admin for platform admins, Logout)
+
+**Left Sidebar (10 Vault-Specific Modules):**
+1. Profile (User icon) - Currently user profile, will become vault home
+2. Metrics (BarChart3) - KPI tracking ✅
+3. Finance (DollarSign) - Financial snapshots ✅
+4. Reports (TrendingUp) - Executive summaries
+5. Packs (Package) - Board packs (not yet built)
+6. Requests (MessageSquare) - Investor Q&A (not yet built)
+7. Documents (FileStack) - PDF library ✅
+8. Governance (Scale) - Decisions + Risks combined ✅
+9. Members (Users) - Team management ✅
+10. Secrets (Shield) - Trade secrets ✅
+
+**Archived from Navigation:**
+- Tasks (hidden when executive_layer_v2 enabled)
+- Milestones (hidden when executive_layer_v2 enabled)
+
 ### Pending Phase G Tasks
 - [ ] Fix security issues (11 function search_path warnings)
 - [ ] Install test dependencies (@testing-library/react, etc.)

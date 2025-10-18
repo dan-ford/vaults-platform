@@ -7,7 +7,7 @@ import { UserMenu } from "@/components/navigation/user-menu";
 import { OrganizationSwitcher } from "@/components/organization-switcher";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { CopilotChat } from "@copilotkit/react-ui";
-import { Bot, Search, X } from "lucide-react";
+import { Bot, Search, X, LayoutDashboard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRagSearchAction } from "@/lib/hooks/use-rag-search-action";
 import { useReportActions } from "@/lib/hooks/use-report-actions";
@@ -50,7 +50,7 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-white">
       {/* Main content wrapper - entire page shifts when sidebar opens */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out md:ml-14 ${
           sidebarOpen ? 'mr-96' : 'mr-0'
         }`}
       >
@@ -77,6 +77,14 @@ export default function DashboardLayout({
             <div className="flex items-center gap-1">
               {/* Desktop: Show all controls */}
               <div className="hidden md:flex items-center gap-1">
+                <Link
+                  href="/dashboard"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                  aria-label="Portfolio Dashboard"
+                  title="Portfolio Dashboard"
+                >
+                  <LayoutDashboard className="h-[25px] w-[25px]" aria-hidden="true" />
+                </Link>
                 <OrganizationSwitcher />
                 <Link
                   href="/search"

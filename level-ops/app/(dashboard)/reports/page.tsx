@@ -6,8 +6,10 @@ import { useOrganization } from "@/lib/context/organization-context";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionGuard, RoleBadge } from "@/components/permissions";
 import { ReportGenerator } from "@/lib/services/report-generator";
-import { FileText, Download, Trash2, Calendar, TrendingUp, BarChart } from "lucide-react";
+import { generateContentHash } from "@/lib/utils/content-hash";
+import { FileText, Download, Trash2, Calendar, TrendingUp, BarChart, CheckCircle, XCircle, Send, Lock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -24,6 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface Report {
   id: string;
@@ -34,19 +44,43 @@ interface Report {
   content_markdown: string;
   stats: any;
   created_at: string;
+  approval_status: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  rejection_reason: string | null;
+  is_published: boolean | null;
+  published_at: string | null;
+  content_hash: string | null;
+  created_by: string;
 }
+
+type ApprovalStatus = "draft" | "pending_approval" | "approved" | "rejected";
+type ReportFilter = "all" | ApprovalStatus | "published";
+
+const STATUS_COLORS = {
+  draft: "bg-slate-100 text-slate-800 border-slate-200",
+  pending_approval: "bg-amber-100 text-amber-800 border-amber-200",
+  approved: "bg-green-100 text-green-800 border-green-200",
+  rejected: "bg-red-100 text-red-800 border-red-200",
+};
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
+  const [filter, setFilter] = useState<ReportFilter>("all");
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
   const [reportType, setReportType] = useState<"weekly_summary" | "monthly_summary">("weekly_summary");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("current");
 
   const { currentOrg } = useOrganization();
-  const { hasPermission, role, canEdit, canDelete, isViewer } = usePermissions();
+  const { hasPermission, role, canEdit, canDelete, isViewer, isOwner, isAdmin } = usePermissions();
   const supabase = createClient();
   const reportGenerator = new ReportGenerator();
+
+  const canApprove = isOwner || isAdmin;
 
   // Load reports
   const loadReports = async () => {
@@ -93,8 +127,8 @@ export default function ReportsPage() {
           filter: `org_id=eq.${currentOrg.id}`,
         },
         (payload) => {
-          if (payload.eventType === "INSERT") {
-            setReports((prev) => [payload.new as Report, ...prev]);
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            loadReports(); // Reload all to maintain proper sorting
           } else if (payload.eventType === "DELETE") {
             setReports((prev) =>
               prev.filter((r) => r.id !== (payload.old as Report).id)
@@ -166,7 +200,7 @@ export default function ReportsPage() {
         periodEnd
       );
 
-      // Save to database
+      // Save to database with draft status
       const { error } = await supabase.from("reports").insert({
         org_id: currentOrg.id,
         title,
@@ -176,6 +210,7 @@ export default function ReportsPage() {
         content_markdown: contentMarkdown,
         stats,
         created_by: user.id,
+        approval_status: "draft",
       } as any);
 
       if (error) throw error;
@@ -187,6 +222,100 @@ export default function ReportsPage() {
       alert("Failed to generate report. Please try again.");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // Submit for approval
+  const handleSubmitForApproval = async (report: Report) => {
+    try {
+      const { error } = await supabase
+        .from("reports")
+        .update({ approval_status: "pending_approval" })
+        .eq("id", report.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error submitting for approval:", error);
+      alert("Failed to submit for approval");
+    }
+  };
+
+  // Approve report
+  const handleApprove = async (report: Report) => {
+    if (!canApprove) return;
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("reports")
+        .update({
+          approval_status: "approved",
+          approved_by: user.id,
+          approved_at: new Date().toISOString(),
+        })
+        .eq("id", report.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error approving report:", error);
+      alert("Failed to approve report");
+    }
+  };
+
+  // Reject report
+  const handleReject = async () => {
+    if (!canApprove || !selectedReport) return;
+
+    try {
+      const { error } = await supabase
+        .from("reports")
+        .update({
+          approval_status: "rejected",
+          rejection_reason: rejectionReason,
+        })
+        .eq("id", selectedReport.id);
+
+      if (error) throw error;
+
+      setShowRejectDialog(false);
+      setSelectedReport(null);
+      setRejectionReason("");
+    } catch (error) {
+      console.error("Error rejecting report:", error);
+      alert("Failed to reject report");
+    }
+  };
+
+  // Publish report (immutable)
+  const handlePublish = async (report: Report) => {
+    if (!canApprove || report.approval_status !== "approved") return;
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Generate SHA-256 hash of content
+      const contentHash = await generateContentHash(report.content_markdown);
+
+      const { error } = await supabase
+        .from("reports")
+        .update({
+          is_published: true,
+          published_at: new Date().toISOString(),
+          content_hash: contentHash,
+        })
+        .eq("id", report.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error publishing report:", error);
+      alert("Failed to publish report");
     }
   };
 
@@ -238,6 +367,18 @@ export default function ReportsPage() {
     return "Custom Report";
   };
 
+  const getStatusLabel = (status: string | null) => {
+    if (!status) return "Draft";
+    return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
+  // Filter reports
+  const filteredReports = reports.filter((report) => {
+    if (filter === "all") return true;
+    if (filter === "published") return report.is_published === true;
+    return report.approval_status === filter;
+  });
+
   if (!currentOrg) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -254,7 +395,7 @@ export default function ReportsPage() {
         <div className="space-y-1.5">
           <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
           <p className="text-muted-foreground mt-1">
-            Generate and manage executive summaries and analytics reports
+            Generate and manage executive summaries with approval workflow
           </p>
           <RoleBadge />
         </div>
@@ -265,23 +406,80 @@ export default function ReportsPage() {
         </PermissionGuard>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex gap-2 flex-wrap">
+        <Button
+          variant={filter === "all" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilter("all")}
+        >
+          All
+        </Button>
+        <Button
+          variant={filter === "draft" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilter("draft")}
+        >
+          Drafts
+        </Button>
+        <Button
+          variant={filter === "pending_approval" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilter("pending_approval")}
+        >
+          Pending
+        </Button>
+        <Button
+          variant={filter === "approved" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilter("approved")}
+        >
+          Approved
+        </Button>
+        <Button
+          variant={filter === "published" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilter("published")}
+        >
+          <Lock className="h-3 w-3 mr-1" />
+          Published
+        </Button>
+      </div>
+
       {/* Report Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {reports.map((report) => (
+        {filteredReports.map((report) => (
           <div
             key={report.id}
-            className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+            className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
+              report.is_published ? "border-primary/50 bg-primary/5" : ""
+            }`}
           >
             <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-1">
                 {getReportIcon(report.type)}
-                <div>
-                  <h3 className="font-semibold">{report.title}</h3>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold truncate">{report.title}</h3>
+                    {report.is_published && (
+                      <Shield className="h-4 w-4 text-primary flex-shrink-0" title="Published (Immutable)" />
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {getReportTypeName(report.type)}
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Status Badge */}
+            <div className="mb-3">
+              <Badge
+                variant="outline"
+                className={STATUS_COLORS[report.approval_status as keyof typeof STATUS_COLORS] || "bg-gray-100"}
+              >
+                {getStatusLabel(report.approval_status)}
+              </Badge>
             </div>
 
             <div className="text-sm text-muted-foreground mb-4">
@@ -292,11 +490,16 @@ export default function ReportsPage() {
               <p>
                 Created: {new Date(report.created_at).toLocaleDateString()}
               </p>
+              {report.published_at && (
+                <p className="text-primary">
+                  Published: {new Date(report.published_at).toLocaleDateString()}
+                </p>
+              )}
             </div>
 
             {/* Quick Stats */}
             {report.stats && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-xs">
+              <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
                 <div className="bg-gray-50 p-2 rounded">
                   <p className="text-muted-foreground">Tasks</p>
                   <p className="font-semibold">{report.stats.tasks?.total || 0}</p>
@@ -318,28 +521,100 @@ export default function ReportsPage() {
                 <Download className="mr-1 h-3 w-3" />
                 Download
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleDeleteReport(report.id)}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
+
+              {!report.is_published && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      Actions
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {/* Submit for approval (creator only, draft status) */}
+                    {report.approval_status === "draft" && canEdit && (
+                      <DropdownMenuItem onClick={() => handleSubmitForApproval(report)}>
+                        <Send className="mr-2 h-4 w-4" />
+                        Submit for Approval
+                      </DropdownMenuItem>
+                    )}
+
+                    {/* Approve (admin/owner only, pending status) */}
+                    {report.approval_status === "pending_approval" && canApprove && (
+                      <>
+                        <DropdownMenuItem onClick={() => handleApprove(report)}>
+                          <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                          Approve
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedReport(report);
+                            setShowRejectDialog(true);
+                          }}
+                        >
+                          <XCircle className="mr-2 h-4 w-4 text-red-600" />
+                          Reject
+                        </DropdownMenuItem>
+                      </>
+                    )}
+
+                    {/* Publish (admin/owner only, approved status) */}
+                    {report.approval_status === "approved" && !report.is_published && canApprove && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handlePublish(report)}>
+                          <Lock className="mr-2 h-4 w-4 text-primary" />
+                          Publish (Immutable)
+                        </DropdownMenuItem>
+                      </>
+                    )}
+
+                    {/* Delete (if not published) */}
+                    {canDelete && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteReport(report.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
+
+            {/* Published indicator with hash */}
+            {report.is_published && report.content_hash && (
+              <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Shield className="h-3 w-3" />
+                  <span className="font-mono truncate" title={report.content_hash}>
+                    {report.content_hash.substring(0, 16)}...
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {reports.length === 0 && (
+      {filteredReports.length === 0 && (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
           <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No reports yet</h3>
+          <h3 className="text-lg font-semibold mb-2">No reports{filter !== "all" ? ` in ${filter}` : ""}</h3>
           <p className="text-muted-foreground mb-4">
-            Generate your first executive summary to get started
+            {filter === "all"
+              ? "Generate your first executive summary to get started"
+              : `No reports with ${filter} status`}
           </p>
-          <Button onClick={() => setShowGenerateDialog(true)}>
-            Generate Report
-          </Button>
+          {filter === "all" && (
+            <Button onClick={() => setShowGenerateDialog(true)}>
+              Generate Report
+            </Button>
+          )}
         </div>
       )}
 
@@ -405,6 +680,11 @@ export default function ReportsPage() {
                 <li>Recent decisions and rationale</li>
                 <li>Recommended actions</li>
               </ul>
+              <div className="mt-3 pt-3 border-t">
+                <p className="text-xs text-muted-foreground">
+                  Report will be created in DRAFT status. Submit for approval when ready.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -418,6 +698,52 @@ export default function ReportsPage() {
             </Button>
             <Button onClick={handleGenerateReport} disabled={isGenerating}>
               {isGenerating ? "Generating..." : "Generate Report"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Dialog */}
+      <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+        <DialogContent className="max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Reject Report</DialogTitle>
+            <DialogDescription>
+              Provide a reason for rejecting this report
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 overflow-y-auto flex-1 px-1">
+            <div className="space-y-2">
+              <Label htmlFor="rejection-reason">Rejection Reason</Label>
+              <Textarea
+                id="rejection-reason"
+                rows={4}
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Explain why this report is being rejected and what needs to be addressed..."
+                className="resize-none"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowRejectDialog(false);
+                setRejectionReason("");
+                setSelectedReport(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReject}
+              disabled={!rejectionReason.trim()}
+            >
+              Reject Report
             </Button>
           </DialogFooter>
         </DialogContent>

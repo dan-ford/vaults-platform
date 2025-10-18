@@ -234,7 +234,22 @@ All dialogs MUST be responsive and scrollable:
 ## PRODUCTION DEPLOYMENT STATUS
 
 ### ✅ DEPLOYED TO PRODUCTION (October 16, 2025)
-### 🚀 LATEST UPDATE (October 18, 2025): Documentation Consolidation & Cleanup
+### 🚀 LATEST UPDATE (October 18, 2025): Executive Layer Transformation Roadmap
+
+**STRATEGIC CONTEXT:** VAULTS is transforming from a general task-driven workspace into a focused **executive and investor communications platform**. See **EXECUTIVE_LAYER_IMPLEMENTATION_PLAN.md** for the complete roadmap.
+
+**KEY CHANGES AHEAD:**
+- New positioning: "The executive operating layer for investors and founders"
+- Signal-only modules: Plan, Metrics, Finance, Summary, Packs, Requests
+- Immutable outputs with SHA-256 hashing
+- Portfolio layer for cross-vault analytics
+- Feature-flagged gradual rollout (backward compatible)
+
+**IMPLEMENTATION APPROACH:**
+- All changes on `feature/executive-layer-v2` branch
+- Feature flags in `organizations.settings.modules`
+- Zero breaking changes (route aliases maintained)
+- Phased rollout over 12-17 weeks
 
 #### Infrastructure
 - ✅ **GitHub Repository**: https://github.com/dan-ford/vaults-platform
