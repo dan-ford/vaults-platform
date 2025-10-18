@@ -233,23 +233,42 @@ All dialogs MUST be responsive and scrollable:
 
 ## PRODUCTION DEPLOYMENT STATUS
 
-### ✅ DEPLOYED TO PRODUCTION (October 16, 2025)
-### 🚀 LATEST UPDATE (October 18, 2025): Executive Layer Transformation Roadmap
+### 🟡 CRITICAL: Executive Layer Deployed But Inactive (October 18, 2025)
 
-**STRATEGIC CONTEXT:** VAULTS is transforming from a general task-driven workspace into a focused **executive and investor communications platform**. See **EXECUTIVE_LAYER_IMPLEMENTATION_PLAN.md** for the complete roadmap.
+**STRATEGIC CONTEXT:** VAULTS is transforming from a general task-driven workspace into a focused **executive and investor communications platform**. See **REVISED_MODULE_PLAN.md** for the complete implementation status.
 
-**KEY CHANGES AHEAD:**
+**CURRENT STATE:**
+- Code Status: COMPLETE - All Phase 1 & 2 modules deployed (Commit 8f364f1)
+- Feature Status: INACTIVE - Requires feature flag activation per organization
+- Build Status: BROKEN - 22 TypeScript errors (types regeneration needed)
+- Database: READY - All 8 new tables created with RLS policies
+
+**COMPLETED FEATURES (Deployed but Hidden):**
 - New positioning: "The executive operating layer for investors and founders"
-- Signal-only modules: Plan, Metrics, Finance, Summary, Packs, Requests
-- Immutable outputs with SHA-256 hashing
-- Portfolio layer for cross-vault analytics
-- Feature-flagged gradual rollout (backward compatible)
+- 7 new signal-only modules: Vault Profile, Metrics, Finance, Reports (enhanced), Packs, Requests, Governance
+- Documents module enhanced with sections and inline Q&A
+- Decisions module enhanced with multi-signature approval workflow
+- Immutable outputs with SHA-256 hashing (Reports, Packs)
+- Portfolio layer for cross-vault analytics (Dashboard in top nav)
 
-**IMPLEMENTATION APPROACH:**
-- All changes on `feature/executive-layer-v2` branch
-- Feature flags in `organizations.settings.modules`
-- Zero breaking changes (route aliases maintained)
-- Phased rollout over 12-17 weeks
+**CRITICAL BLOCKER:**
+Feature flag `executive_layer_v2` defaults to false. Users cannot access new modules until:
+1. TypeScript build fixed (regenerate database types)
+2. Feature flag enabled per organization via SQL
+3. Smoke testing completed (see REVISED_MODULE_PLAN.md checklist)
+
+**ACTIVATION GUIDE:** See **NEXT_STEPS.md** for detailed activation procedures.
+
+**QUICK FIX (Next Session Priority):**
+```bash
+# 1. Fix TypeScript build (CRITICAL)
+npx supabase gen types typescript --project-id lkjzxsvytsmnvuorqfdl > lib/supabase/database.types.ts
+npm run typecheck && npm run build
+git add lib/supabase/database.types.ts && git commit -m "fix: regenerate database types" && git push
+
+# 2. Enable flag for test org (run in Supabase SQL editor)
+UPDATE organizations SET settings = jsonb_set(COALESCE(settings, '{}'::jsonb), '{modules,executive_layer_v2}', 'true') WHERE id = '<org_id>';
+```
 
 #### Infrastructure
 - ✅ **GitHub Repository**: https://github.com/dan-ford/vaults-platform

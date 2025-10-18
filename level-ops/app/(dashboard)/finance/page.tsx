@@ -10,8 +10,6 @@ import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionGuard } from "@/components/permissions";
 import { FinancialSnapshotForm } from "@/components/finance/snapshot-form";
 import { FinancialCard } from "@/components/finance/financial-card";
-import { useFeatureFlag } from "@/lib/hooks/use-feature-flag";
-import { useRouter } from "next/navigation";
 
 type FinancialSnapshot = {
   id: string;
@@ -37,15 +35,6 @@ export default function FinancePage() {
   const supabase = createClient();
   const { currentOrg } = useOrganization();
   const { canEdit } = usePermissions();
-  const executiveLayerEnabled = useFeatureFlag('executive_layer_v2');
-  const router = useRouter();
-
-  // Redirect if feature not enabled
-  useEffect(() => {
-    if (!executiveLayerEnabled) {
-      router.push('/dashboard');
-    }
-  }, [executiveLayerEnabled, router]);
 
   // Load financial snapshots
   const loadData = async () => {

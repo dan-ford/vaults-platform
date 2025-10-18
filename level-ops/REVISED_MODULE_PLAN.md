@@ -1,17 +1,57 @@
 # VAULTS Executive Layer - Revised Module Plan
 
 **Updated:** 2025-10-18
-**Status:** ✅ COMPLETE - All Phases Implemented
+**Status:** 🟡 DEPLOYED - ACTIVATION PENDING
+**Critical Note:** All code deployed to production but feature flag `executive_layer_v2` must be enabled per organization to make modules accessible.
 
 ---
 
 ## Implementation Summary
 
-**Completion Date:** October 18, 2025
+**Deployment Date:** October 18, 2025 (Commit: 8f364f1)
+**Code Status:** COMPLETE - All phases implemented and deployed
+**Feature Status:** INACTIVE - Requires feature flag activation
 **Total Duration:** Phase 1A-1D + Phase 2 (all completed same day)
 **Modules Delivered:** 10 vault-specific + 1 cross-vault
 **Database Tables Created:** 8 new tables (okrs, kpis, kpi_measurements, financial_snapshots, board_packs, decision_approvals, requests, document_sections)
 **Navigation Structure:** Simplified from 12 to 10 vault-specific modules + top nav for cross-vault features
+
+### 🚨 IMPORTANT: POST-DEPLOYMENT ACTIVATION REQUIRED
+
+**Current State:**
+- All code deployed to production ✅
+- All database tables created with RLS ✅
+- All 7 new modules fully functional ✅
+- **BUT: Feature flag disabled by default** ❌
+
+**To activate for an organization:**
+```sql
+-- Enable executive layer v2 for a specific organization
+UPDATE organizations
+SET settings = jsonb_set(
+  COALESCE(settings, '{}'::jsonb),
+  '{modules,executive_layer_v2}',
+  'true'
+)
+WHERE id = '<organization_id>';
+
+-- Verify it was set correctly
+SELECT name, settings->'modules'->'executive_layer_v2' as executive_layer_enabled
+FROM organizations
+WHERE id = '<organization_id>';
+```
+
+**Before enabling, complete these critical fixes:**
+1. ❌ **TypeScript build is broken** - 22 errors in contacts.tsx and decisions.tsx
+2. ❌ **Database types outdated** - Missing decision_approvals and document_sections tables
+3. ⚠️ **No smoke testing performed** - Should test all modules before user access
+
+**Fix sequence:**
+1. Regenerate types: `npx supabase gen types typescript --project-id lkjzxsvytsmnvuorqfdl > lib/supabase/database.types.ts`
+2. Verify build: `npm run typecheck && npm run build` (must pass)
+3. Smoke test all 7 modules (see checklist below)
+4. Enable flag for test organization
+5. User acceptance testing
 
 ### Key Achievements
 ✅ Complete executive layer transformation
@@ -300,9 +340,137 @@
 
 ---
 
+## Smoke Testing Checklist
+
+### Pre-Activation Testing (Must Complete Before Enabling Flag)
+
+**1. Vault Profile Module** (`/vault-profile`)
+- [ ] Page loads without errors
+- [ ] Can view organization info section
+- [ ] Can edit organization info (mission, vision, values) - ADMIN+
+- [ ] Can create new OKR
+- [ ] Can edit existing OKR
+- [ ] Can delete OKR - ADMIN+
+- [ ] Progress bar displays correctly for OKRs
+- [ ] Recent activity feed shows last 10 actions
+- [ ] AI assistant can read profile and OKRs
+- [ ] AI can create/update/delete OKRs via chat
+- [ ] Realtime: Changes made in another browser appear automatically
+
+**2. Metrics Module** (`/metrics`)
+- [ ] Page loads without errors
+- [ ] Can create new KPI
+- [ ] Can add measurement to KPI
+- [ ] Trend indicators show correctly (up/down/flat)
+- [ ] KPI cards display latest value and target
+- [ ] Last 12 periods visible in card
+- [ ] Can edit KPI details
+- [ ] Can delete KPI - ADMIN+
+- [ ] Realtime: KPI updates appear automatically
+
+**3. Finance Module** (`/finance`)
+- [ ] Page loads without errors
+- [ ] Can create financial snapshot
+- [ ] All fields saved correctly (ARR, revenue, gross margin, cash, burn, runway)
+- [ ] Month-over-month variance displays
+- [ ] Historical grid shows last 12 months
+- [ ] Can edit snapshot
+- [ ] Can delete snapshot - ADMIN+
+- [ ] Realtime: Snapshot changes appear automatically
+
+**4. Reports Module** (`/reports` - ENHANCED)
+- [ ] Page loads without errors
+- [ ] Can create draft report
+- [ ] Can submit for approval (Draft → Pending)
+- [ ] ADMIN can approve report (Pending → Approved)
+- [ ] ADMIN can reject report with reason
+- [ ] Can publish approved report (Approved → Published)
+- [ ] SHA-256 hash generated on publish
+- [ ] Published reports marked immutable
+- [ ] Content hash displayed for verification
+- [ ] Can download report as markdown
+
+**5. Packs Module** (`/packs`)
+- [ ] Page loads without errors
+- [ ] Can create board pack
+- [ ] Can add agenda items with duration/presenter
+- [ ] Can add attendees with roles
+- [ ] Can edit draft pack
+- [ ] ADMIN can approve pack
+- [ ] ADMIN can publish approved pack
+- [ ] SHA-256 hash generated on publish
+- [ ] Published packs marked immutable
+- [ ] Can download pack as markdown
+- [ ] Cannot edit published pack
+
+**6. Requests Module** (`/requests`)
+- [ ] Page loads without errors
+- [ ] Can create request with priority and due date
+- [ ] Can assign request to team member
+- [ ] Assigned user receives notification
+- [ ] Can change status (Open → In Progress → Answered)
+- [ ] Can submit response to request
+- [ ] Requester receives notification when answered
+- [ ] Can close answered request
+- [ ] Requester receives notification when closed
+- [ ] Realtime: Request changes appear automatically
+
+**7. Governance Module** (`/governance`)
+- [ ] Page loads without errors
+- [ ] Decisions tab shows recent decisions
+- [ ] Risks tab shows recent risks
+- [ ] Can navigate to full /decisions page
+- [ ] Can navigate to full /risks page
+- [ ] **Decisions multi-signature approval:**
+  - [ ] ADMIN can request approvals from team members
+  - [ ] Approvers receive notification
+  - [ ] Approvers can approve with notes
+  - [ ] Approvers can reject with notes
+  - [ ] Approval status badges show on cards
+  - [ ] Realtime: Approval changes appear automatically
+
+**8. Documents Enhancement** (`/documents`)
+- [ ] Page loads without errors
+- [ ] Can create document section
+- [ ] Can reorder sections
+- [ ] Can add question to section
+- [ ] Can answer question in section
+- [ ] Timestamps recorded for Q&A
+- [ ] Can edit section
+- [ ] Can delete section - ADMIN+
+- [ ] Realtime: Section changes appear automatically
+
+**9. Navigation & Permissions**
+- [ ] All 7 new modules visible in left nav when flag enabled
+- [ ] Tasks and Milestones hidden when flag enabled
+- [ ] VIEWER: Can view all modules, no edit buttons visible
+- [ ] EDITOR: Can create/edit, cannot delete or approve
+- [ ] ADMIN: Can create/edit/delete/approve
+- [ ] OWNER: Same as ADMIN
+- [ ] Feature flag toggle hides/shows executive layer correctly
+
+**10. Cross-Cutting Concerns**
+- [ ] All pages have proper page titles
+- [ ] All forms validate required fields
+- [ ] All dialogs fit on screen (max-h-[90vh])
+- [ ] All multi-line inputs use textarea (min 3 rows)
+- [ ] All error messages are user-friendly
+- [ ] All success states show confirmation
+- [ ] No console errors in browser
+- [ ] No broken images or missing icons
+
+---
+
 ## Final Notes
 
-**Implementation Completed:** October 18, 2025
-**Next Steps:** Production deployment and user testing
+**Implementation Completed:** October 18, 2025 (Code Complete)
+**Activation Status:** PENDING - Requires feature flag enablement and critical bug fixes
+**Next Steps:**
+1. Fix TypeScript build errors (regenerate database types)
+2. Complete smoke testing checklist above
+3. Enable feature flag for test organization
+4. User acceptance testing
+5. Phased rollout to all organizations
+
 **Documentation:** All new features documented in this file and README.md
-**Code Quality:** TypeScript strict mode, ESLint clean, all patterns consistent
+**Code Quality:** TypeScript strict mode (currently broken, needs types regeneration), ESLint clean, all patterns consistent

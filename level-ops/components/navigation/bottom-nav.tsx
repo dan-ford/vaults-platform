@@ -6,7 +6,6 @@ import { CheckSquare, Target, AlertTriangle, FileText, LayoutDashboard, FileStac
 import { cn } from "@/lib/utils";
 import { useOrganization } from "@/lib/context/organization-context";
 import { isModuleEnabled, type ModuleKey, type ModuleSettings } from "@/lib/types/modules";
-import { useFeatureFlag } from "@/lib/hooks/use-feature-flag";
 
 const navItems = [
   {
@@ -14,42 +13,36 @@ const navItems = [
     href: "/vault-profile",
     icon: Building2,
     moduleKey: null,
-    requiresFeatureFlag: "executive_layer_v2",
   },
   {
     label: "Metrics",
     href: "/metrics",
     icon: BarChart3,
     moduleKey: null,
-    requiresFeatureFlag: "executive_layer_v2",
   },
   {
     label: "Finance",
     href: "/finance",
     icon: DollarSign,
     moduleKey: null,
-    requiresFeatureFlag: "executive_layer_v2",
   },
   {
     label: "Reports",
     href: "/reports",
     icon: TrendingUp,
     moduleKey: null,
-    requiresFeatureFlag: "executive_layer_v2",
   },
   {
     label: "Packs",
     href: "/packs",
     icon: Package,
     moduleKey: null,
-    requiresFeatureFlag: "executive_layer_v2",
   },
   {
     label: "Requests",
     href: "/requests",
     icon: MessageSquare,
     moduleKey: null,
-    requiresFeatureFlag: "executive_layer_v2",
   },
   {
     label: "Documents",
@@ -80,16 +73,10 @@ const navItems = [
 export function BottomNav() {
   const pathname = usePathname();
   const { currentOrg, isLoading } = useOrganization();
-  const executiveLayerEnabled = useFeatureFlag('executive_layer_v2');
 
-  // Filter nav items based on enabled modules and feature flags
+  // Filter nav items based on enabled modules
   const visibleItems = navItems.filter((item) => {
-    // Check feature flag requirement first
-    if ('requiresFeatureFlag' in item && item.requiresFeatureFlag) {
-      if (!executiveLayerEnabled) return false;
-    }
-
-    if (!item.moduleKey) return true; // Always show items without moduleKey (Dashboard, feature-flagged items)
+    if (!item.moduleKey) return true; // Always show items without moduleKey
     if (isLoading || !currentOrg) return false; // Hide module-based items during loading or when no org
     return isModuleEnabled(currentOrg.settings as ModuleSettings, item.moduleKey);
   });

@@ -12,7 +12,6 @@ import { Tables } from "@/lib/supabase/database.types";
 import { useOrganization } from "@/lib/context/organization-context";
 import { LoadingState } from "@/components/error-states";
 import { usePermissions } from "@/lib/hooks/use-permissions";
-import { useFeatureFlag } from "@/lib/hooks/use-feature-flag";
 import { VaultProfileForm } from "@/components/vault-profile/vault-profile-form";
 import { OKRForm } from "@/components/vault-profile/okr-form";
 import { useAuditLog } from "@/lib/hooks/use-audit-log";
@@ -47,15 +46,7 @@ export default function VaultProfilePage() {
   const { currentOrg } = useOrganization();
   const router = useRouter();
   const { role, canEdit, canDelete } = usePermissions();
-  const executiveLayerEnabled = useFeatureFlag('executive_layer_v2');
   const { logAgentAction } = useAuditLog();
-
-  // Redirect if feature flag not enabled
-  useEffect(() => {
-    if (!executiveLayerEnabled) {
-      router.push('/dashboard');
-    }
-  }, [executiveLayerEnabled, router]);
 
   // Load vault profile data
   const loadVaultProfile = async () => {

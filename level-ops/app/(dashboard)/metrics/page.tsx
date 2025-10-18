@@ -10,8 +10,6 @@ import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionGuard } from "@/components/permissions";
 import { KPIForm } from "@/components/metrics/kpi-form";
 import { KPICard } from "@/components/metrics/kpi-card";
-import { useFeatureFlag } from "@/lib/hooks/use-feature-flag";
-import { useRouter } from "next/navigation";
 
 type KPI = {
   id: string;
@@ -51,15 +49,6 @@ export default function MetricsPage() {
   const supabase = createClient();
   const { currentOrg } = useOrganization();
   const { canEdit } = usePermissions();
-  const executiveLayerEnabled = useFeatureFlag('executive_layer_v2');
-  const router = useRouter();
-
-  // Redirect if feature not enabled
-  useEffect(() => {
-    if (!executiveLayerEnabled) {
-      router.push('/dashboard');
-    }
-  }, [executiveLayerEnabled, router]);
 
   // Load KPIs and their measurements
   const loadData = async () => {
