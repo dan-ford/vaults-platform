@@ -102,7 +102,7 @@ export default function SearchPage() {
 
       {/* Search Bar */}
       <div className="p-4 border-b bg-muted/30">
-        <div className="flex gap-2 max-w-4xl mx-auto">
+        <div className="flex gap-2 max-w-[95vw] md:max-w-4xl mx-auto">
           <Input
             type="text"
             placeholder="Ask a question about your documents..."
@@ -123,7 +123,7 @@ export default function SearchPage() {
 
       {/* Results */}
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-[95vw] md:max-w-4xl mx-auto space-y-4">
           {error && (
             <Card className="p-4 border-destructive/20 bg-destructive/10">
               <p className="text-destructive text-sm">{error}</p>

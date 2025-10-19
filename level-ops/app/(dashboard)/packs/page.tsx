@@ -394,7 +394,7 @@ export default function PacksPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1.5">
           <h1 className="text-3xl font-bold tracking-tight">Board Packs</h1>
           <p className="text-muted-foreground mt-1">
@@ -477,7 +477,7 @@ export default function PacksPage() {
             <div className="mb-3">{getStatusBadge(pack)}</div>
 
             {/* Pack Info */}
-            <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-xs">
               <div className="bg-gray-50 p-2 rounded">
                 <p className="text-muted-foreground">Agenda Items</p>
                 <p className="font-semibold">{pack.agenda?.length || 0}</p>
@@ -654,7 +654,7 @@ export default function PacksPage() {
               )}
 
               <div className="border rounded-lg p-3 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="agenda-title">Item Title</Label>
                     <Input
@@ -725,7 +725,7 @@ export default function PacksPage() {
               )}
 
               <div className="border rounded-lg p-3 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="attendee-name">Name</Label>
                     <Input

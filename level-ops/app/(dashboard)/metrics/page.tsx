@@ -187,7 +187,7 @@ export default function MetricsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4 sm:p-6">
         <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">Loading metrics...</p>
         </div>
@@ -196,10 +196,10 @@ export default function MetricsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-4 sm:p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Metrics</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Metrics</h1>
           <p className="text-muted-foreground mt-1">
             Track core KPIs with trends and variance notes
           </p>
@@ -208,7 +208,7 @@ export default function MetricsPage() {
           <Button
             onClick={() => setIsCreating(true)}
             size="icon"
-            className="h-9 w-9"
+            className="h-9 w-9 shrink-0"
             aria-label="Add KPI"
           >
             <Plus className="h-4 w-4" />

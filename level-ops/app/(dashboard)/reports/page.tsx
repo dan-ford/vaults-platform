@@ -393,7 +393,7 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1.5">
           <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
           <p className="text-muted-foreground mt-1">
@@ -501,7 +501,7 @@ export default function ReportsPage() {
 
             {/* Quick Stats */}
             {report.stats && (
-              <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-xs">
                 <div className="bg-gray-50 p-2 rounded">
                   <p className="text-muted-foreground">Tasks</p>
                   <p className="font-semibold">{report.stats.tasks?.total || 0}</p>

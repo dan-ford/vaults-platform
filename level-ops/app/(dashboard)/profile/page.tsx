@@ -19,8 +19,8 @@ import {
 interface Profile {
   user_id: string;
   email: string;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   phone: string | null;
   avatar_url: string | null;
   created_at: string;

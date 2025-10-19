@@ -761,11 +761,11 @@ export default function SettingsPage() {
       </header>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-gray-200 overflow-x-auto">
         {/* Profile tab - available to all users */}
         <button
           onClick={() => setActiveTab("profile")}
-          className={`px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[80px] ${
+          className={`px-3 sm:px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[60px] sm:min-w-[80px] flex-shrink-0 ${
             activeTab === "profile"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -778,7 +778,7 @@ export default function SettingsPage() {
         {/* Notifications tab - available to all users */}
         <button
           onClick={() => setActiveTab("notifications")}
-          className={`px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[80px] ${
+          className={`px-3 sm:px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[60px] sm:min-w-[80px] flex-shrink-0 ${
             activeTab === "notifications"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -793,7 +793,7 @@ export default function SettingsPage() {
           <>
             <button
               onClick={() => setActiveTab("organization")}
-              className={`px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[80px] ${
+              className={`px-3 sm:px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[60px] sm:min-w-[80px] flex-shrink-0 ${
                 activeTab === "organization"
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -804,7 +804,7 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={() => setActiveTab("members")}
-              className={`px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[80px] ${
+              className={`px-3 sm:px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[60px] sm:min-w-[80px] flex-shrink-0 ${
                 activeTab === "members"
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -815,7 +815,7 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={() => setActiveTab("invitations")}
-              className={`px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[80px] ${
+              className={`px-3 sm:px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[60px] sm:min-w-[80px] flex-shrink-0 ${
                 activeTab === "invitations"
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -826,7 +826,7 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={() => setActiveTab("branding")}
-              className={`px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[80px] ${
+              className={`px-3 sm:px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[60px] sm:min-w-[80px] flex-shrink-0 ${
                 activeTab === "branding"
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -837,7 +837,7 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={() => setActiveTab("plan")}
-              className={`px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[80px] ${
+              className={`px-3 sm:px-4 py-3 font-medium text-xs border-b-2 transition-colors flex flex-col items-center gap-1 min-w-[60px] sm:min-w-[80px] flex-shrink-0 ${
                 activeTab === "plan"
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -1438,7 +1438,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label>Current Plan</Label>
               <div className="p-4 border rounded-lg bg-gray-50">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <p className="text-lg font-semibold">{planTier}</p>
                     <p className="text-sm text-muted-foreground">{PLAN_DISPLAY[planTier].note}</p>

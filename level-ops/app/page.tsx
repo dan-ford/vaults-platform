@@ -1,26 +1,33 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Clock, Shield, TrendingUp, FileCheck, Users } from "lucide-react";
+import { Check, Clock, Shield, TrendingUp, FileCheck, Users, Menu, X } from "lucide-react";
 
 export default function HomePage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-200">
+      <header className="border-b border-gray-200 sticky top-0 bg-white z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/">
             <Image
               src="/logo.png"
               alt="Vaults"
-              width={120}
-              height={36}
+              width={100}
+              height={30}
               priority
-              style={{ width: '120px', height: 'auto' }}
+              className="h-[30px] w-auto"
             />
           </Link>
-          <nav className="flex items-center gap-6">
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-6">
             <Link href="/pricing" className="text-gray-600 hover:text-gray-900 font-medium">
               Pricing
             </Link>
@@ -31,7 +38,43 @@ export default function HomePage() {
               <Button>Get Started</Button>
             </Link>
           </nav>
+
+          {/* Mobile Navigation */}
+          <div className="flex md:hidden items-center gap-2">
+            <Link href="/signup">
+              <Button size="sm">Get Started</Button>
+            </Link>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="h-9 w-9 inline-flex items-center justify-center rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 bg-white">
+            <nav className="px-4 py-4 space-y-3">
+              <Link
+                href="/pricing"
+                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+              <Link
+                href="/login"
+                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}

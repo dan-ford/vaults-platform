@@ -19,7 +19,8 @@ import { PermissionGuard, RoleBadge } from "@/components/permissions";
 
 type Document = {
   id: string;
-  tenant_id: string;
+  tenant_id: string | null;
+  org_id: string | null;
   name: string;
   description: string | null;
   category: string;
@@ -912,7 +913,7 @@ export default function DocumentsPage() {
           setSectionContent("");
         }
       }}>
-        <DialogContent className="max-h-[90vh] flex flex-col max-w-4xl">
+        <DialogContent className="max-h-[90vh] flex flex-col max-w-[95vw] md:max-w-4xl">
           <DialogHeader>
             <DialogTitle>Sections: {viewingSections?.name}</DialogTitle>
             <DialogDescription>

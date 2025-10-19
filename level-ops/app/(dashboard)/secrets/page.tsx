@@ -546,7 +546,7 @@ export default function SecretsPage() {
 
       {/* View Secret Dialog */}
       <Dialog open={isViewing} onOpenChange={setIsViewing}>
-        <DialogContent className="max-h-[90vh] max-w-5xl flex flex-col">
+        <DialogContent className="max-h-[90vh] max-w-[95vw] md:max-w-5xl flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />

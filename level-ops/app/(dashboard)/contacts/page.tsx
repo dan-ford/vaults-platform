@@ -149,9 +149,11 @@ export default function ContactsPage() {
         });
       } else if (data) {
         // Ensure roles is an array (handle legacy data)
-        const normalizedData = data.map((contact: Database['public']['Tables']['contacts']['Row']) => ({
+        const normalizedData = data.map((contact: Database['public']['Tables']['contacts']['Row']): Contact => ({
           ...contact,
-          roles: Array.isArray(contact.roles) ? contact.roles : []
+          roles: Array.isArray(contact.roles) ? (contact.roles as string[]) : [],
+          tenant_id: contact.tenant_id,
+          org_id: contact.org_id
         }));
         setContacts(normalizedData);
       }
@@ -788,7 +790,7 @@ export default function ContactsPage() {
 
               {/* Role Filter */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <Label className="text-sm font-medium">Roles</Label>
                   {filterRoles.length > 0 && (
                     <Button
