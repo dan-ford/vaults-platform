@@ -68,19 +68,24 @@ export function KPIForm({ open, onOpenChange, kpi, onSuccess }: KPIFormProps) {
       setTarget(kpi.target?.toString() || "");
 
       // Check if unit is a common one
-      const commonUnit = COMMON_UNITS.find(u => u.value === kpi.unit);
-      if (commonUnit) {
-        setUnit(kpi.unit || "");
+      if (!kpi.unit) {
+        setUnit("none");
         setCustomUnit("");
       } else {
-        setUnit("custom");
-        setCustomUnit(kpi.unit || "");
+        const commonUnit = COMMON_UNITS.find(u => u.value === kpi.unit);
+        if (commonUnit) {
+          setUnit(kpi.unit);
+          setCustomUnit("");
+        } else {
+          setUnit("custom");
+          setCustomUnit(kpi.unit);
+        }
       }
     } else {
       // Reset form for creating
       setName("");
       setDescription("");
-      setUnit("");
+      setUnit("none");
       setCustomUnit("");
       setTarget("");
       setCadence("monthly");
@@ -96,13 +101,18 @@ export function KPIForm({ open, onOpenChange, kpi, onSuccess }: KPIFormProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const finalUnit = unit === "custom" ? customUnit : unit;
+      let finalUnit = null;
+      if (unit === "custom") {
+        finalUnit = customUnit.trim() || null;
+      } else if (unit !== "none") {
+        finalUnit = unit;
+      }
 
       const kpiData = {
         org_id: currentOrg.id,
         name: name.trim(),
         description: description.trim() || null,
-        unit: finalUnit || null,
+        unit: finalUnit,
         target: target ? parseFloat(target) : null,
         cadence,
         created_by: user.id,
@@ -175,10 +185,10 @@ export function KPIForm({ open, onOpenChange, kpi, onSuccess }: KPIFormProps) {
                 <Label htmlFor="unit">Unit</Label>
                 <Select value={unit} onValueChange={setUnit}>
                   <SelectTrigger id="unit">
-                    <SelectValue placeholder="Select unit" />
+                    <SelectValue placeholder="Select unit (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {COMMON_UNITS.map((u) => (
                       <SelectItem key={u.value} value={u.value}>
                         {u.label}
