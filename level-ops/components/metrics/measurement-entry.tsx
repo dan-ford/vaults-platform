@@ -75,8 +75,8 @@ export function MeasurementEntry({ open, onOpenChange, kpi, onSuccess }: Measure
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="max-h-[90vh] flex flex-col sm:max-w-[500px]">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
           <DialogHeader>
             <DialogTitle>Add Measurement</DialogTitle>
             <DialogDescription>
@@ -84,7 +84,7 @@ export function MeasurementEntry({ open, onOpenChange, kpi, onSuccess }: Measure
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 overflow-y-auto flex-1 px-1 py-4">
             <div className="space-y-2">
               <Label htmlFor="period">Period</Label>
               <Input
@@ -129,6 +129,7 @@ export function MeasurementEntry({ open, onOpenChange, kpi, onSuccess }: Measure
                 onChange={(e) => setVarianceNote(e.target.value)}
                 placeholder="Explain significant variance from target or trend..."
                 rows={3}
+                className="resize-none"
               />
               <p className="text-xs text-muted-foreground">
                 Add context if this measurement differs significantly from expectations
@@ -136,7 +137,7 @@ export function MeasurementEntry({ open, onOpenChange, kpi, onSuccess }: Measure
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button
               type="button"
               variant="outline"

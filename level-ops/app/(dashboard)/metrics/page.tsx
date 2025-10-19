@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import type { Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { useOrganization } from "@/lib/context/organization-context";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionGuard } from "@/components/permissions";
@@ -126,7 +128,7 @@ export default function MetricsPage() {
           table: 'kpis',
           filter: `org_id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['kpis']['Row']>) => {
           if (payload.eventType === 'INSERT') {
             setKpis(current => [...current, payload.new as KPI]);
           } else if (payload.eventType === 'UPDATE') {
@@ -157,7 +159,7 @@ export default function MetricsPage() {
           table: 'kpi_measurements',
           filter: `org_id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['kpi_measurements']['Row']>) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const measurement = payload.new as KPIMeasurement;
             setMeasurements(current => ({
@@ -203,9 +205,13 @@ export default function MetricsPage() {
           </p>
         </div>
         <PermissionGuard require="edit">
-          <Button onClick={() => setIsCreating(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add KPI
+          <Button
+            onClick={() => setIsCreating(true)}
+            size="icon"
+            className="h-9 w-9"
+            aria-label="Add KPI"
+          >
+            <Plus className="h-4 w-4" />
           </Button>
         </PermissionGuard>
       </div>

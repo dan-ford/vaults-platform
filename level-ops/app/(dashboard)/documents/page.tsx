@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, FileStack, Download, Trash2, Upload, Eye, List, MessageSquare, ArrowUp, ArrowDown, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import type { Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { useOrganization } from "@/lib/context/organization-context";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionGuard, RoleBadge } from "@/components/permissions";
@@ -146,7 +148,7 @@ export default function DocumentsPage() {
           table: 'documents',
           filter: `org_id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['documents']['Row']>) => {
           if (payload.eventType === 'INSERT') {
             setDocuments(current => [payload.new as Document, ...current]);
           } else if (payload.eventType === 'UPDATE') {

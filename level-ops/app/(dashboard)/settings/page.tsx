@@ -478,7 +478,6 @@ export default function SettingsPage() {
 
     const { error } = await supabase
       .from("org_memberships")
-      // @ts-expect-error - Supabase type inference issue
       .update({ role: newRole })
       .eq("org_id", currentOrg.id)
       .eq("user_id", userId);
@@ -520,7 +519,6 @@ export default function SettingsPage() {
 
       const { error} = await supabase
         .from("organizations")
-        // @ts-expect-error - Supabase type inference issue
         .update({
           name: orgName,
           slug: orgSlug,
@@ -575,7 +573,6 @@ export default function SettingsPage() {
       // Update organization with new logo URL
       const { error: updateError } = await supabase
         .from("organizations")
-        // @ts-expect-error - Supabase type inference issue
         .update({ logo_url: publicUrl })
         .eq("id", currentOrg.id);
 
@@ -604,7 +601,6 @@ export default function SettingsPage() {
 
       const { error } = await supabase
         .from("organizations")
-        // @ts-expect-error - Supabase type inference issue
         .update({ logo_url: null })
         .eq("id", currentOrg.id);
 
@@ -627,7 +623,6 @@ export default function SettingsPage() {
     try {
       const { error } = await supabase
         .from("organizations")
-        // @ts-expect-error - Supabase type inference issue
         .update({
           brand_color: brandColor,
         })
@@ -683,7 +678,6 @@ export default function SettingsPage() {
       // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from("profiles")
-        // @ts-expect-error - Supabase type inference issue
         .update({ avatar_url: publicUrl })
         .eq("user_id", user.id);
 
@@ -714,7 +708,6 @@ export default function SettingsPage() {
 
       const { error } = await supabase
         .from("profiles")
-        // @ts-expect-error - Supabase type inference issue
         .update({ avatar_url: null })
         .eq("user_id", user.id);
 
@@ -738,7 +731,6 @@ export default function SettingsPage() {
 
       const { error } = await supabase
         .from("profiles")
-        // @ts-expect-error - Supabase type inference issue
         .update({
           first_name: firstName,
           last_name: lastName,

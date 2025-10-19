@@ -9,6 +9,7 @@ import {
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 type Organization = Database["public"]["Tables"]["organizations"]["Row"];
 type OrgMembership = Database["public"]["Tables"]["org_memberships"]["Row"];
@@ -115,7 +116,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
             role: m.role,
           };
         })
-        .filter((org): org is OrganizationWithRole => org !== null);
+        .filter((org: OrganizationWithRole | null): org is OrganizationWithRole => org !== null);
 
       setOrganizations(orgsWithRoles);
 
@@ -168,7 +169,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
           table: "organizations",
           filter: `id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['organizations']['Row']>) => {
           if (payload.eventType === "UPDATE") {
             const updatedOrg = payload.new as Organization;
 

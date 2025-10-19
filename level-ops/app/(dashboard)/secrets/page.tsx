@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Shield, Trash2, Eye, Clock, Lock, Download, History } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import type { Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { useOrganization } from "@/lib/context/organization-context";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionGuard, RoleBadge } from "@/components/permissions";
@@ -139,7 +141,7 @@ export default function SecretsPage() {
           table: 'secrets',
           filter: `org_id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['secrets']['Row']>) => {
           if (payload.eventType === 'INSERT') {
             setSecrets(current => [payload.new as Secret, ...current]);
           } else if (payload.eventType === 'UPDATE') {

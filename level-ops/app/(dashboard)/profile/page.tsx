@@ -122,7 +122,6 @@ export default function ProfilePage() {
         updated_at: new Date().toISOString(),
       };
 
-      // @ts-expect-error - Supabase type inference issue with profiles table
       const { error: updateError } = await supabase
         .from("profiles")
         .update(updates)

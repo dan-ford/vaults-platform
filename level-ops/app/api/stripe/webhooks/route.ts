@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-12-18.acacia',
+      apiVersion: '2025-09-30.clover',
     })
   : null;
 
@@ -84,12 +84,19 @@ export async function POST(request: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
 
+        // Access period properties from the subscription object
+        const subscriptionData = subscription as any;
+
         const { error: updateError } = await supabase
           .from('subscriptions')
           .update({
             status: subscription.status,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_start: subscriptionData.current_period_start
+              ? new Date(subscriptionData.current_period_start * 1000).toISOString()
+              : null,
+            current_period_end: subscriptionData.current_period_end
+              ? new Date(subscriptionData.current_period_end * 1000).toISOString()
+              : null,
             cancel_at_period_end: subscription.cancel_at_period_end,
             updated_at: new Date().toISOString(),
           })

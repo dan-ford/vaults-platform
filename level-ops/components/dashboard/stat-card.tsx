@@ -12,10 +12,9 @@ interface StatCardProps {
     value: number;
     isPositive: boolean;
   };
-  iconColor?: string;
 }
 
-export function StatCard({ title, value, subtitle, icon: Icon, trend, iconColor = "text-primary" }: StatCardProps) {
+export function StatCard({ title, value, subtitle, icon: Icon, trend }: StatCardProps) {
   return (
     <Card className="p-6 hover:shadow-lg transition-all duration-300 animate-fade-in">
       <div className="flex items-start justify-between">
@@ -26,14 +25,14 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, iconColor 
             <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
           )}
           {trend && (
-            <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="flex items-center gap-1 mt-2 text-xs font-medium text-muted-foreground">
               <span>{trend.isPositive ? '↑' : '↓'}</span>
               <span>{Math.abs(trend.value)}%</span>
-              <span className="text-muted-foreground">vs last week</span>
+              <span>vs last week</span>
             </div>
           )}
         </div>
-        <div className={`p-3 rounded-lg bg-primary/10 ${iconColor}`}>
+        <div className="p-3 rounded-lg bg-primary/10 text-primary">
           <Icon className="h-6 w-6" />
         </div>
       </div>

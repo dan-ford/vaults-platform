@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Tables } from "@/lib/supabase/database.types";
+import { Tables, Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { useOrganization } from "@/lib/context/organization-context";
 import { useAuditLog } from "@/lib/hooks/use-audit-log";
 import { usePermissions } from "@/lib/hooks/use-permissions";
@@ -90,7 +91,7 @@ export default function TasksPage() {
           table: 'tasks',
           filter: `org_id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['tasks']['Row']>) => {
           if (payload.eventType === 'INSERT') {
             setTasks(current => [payload.new as Task, ...current]);
           } else if (payload.eventType === 'UPDATE') {
@@ -203,7 +204,6 @@ export default function TasksPage() {
 
       const { data, error } = await supabase
         .from("tasks")
-        // @ts-expect-error - Supabase type inference issue with update method
         .update({ status })
         .eq("id", taskId)
         .select()

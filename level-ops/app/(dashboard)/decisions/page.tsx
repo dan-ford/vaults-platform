@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, FileText, Pencil, Trash2, Eye, CheckCircle2, XCircle, Users, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Tables } from "@/lib/supabase/database.types";
+import { Tables, Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { useOrganization } from "@/lib/context/organization-context";
 import { useAuditLog } from "@/lib/hooks/use-audit-log";
 import { usePermissions } from "@/lib/hooks/use-permissions";
@@ -129,7 +130,7 @@ export default function DecisionsPage() {
           table: 'decisions',
           filter: `org_id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['decisions']['Row']>) => {
           if (payload.eventType === 'INSERT') {
             setDecisions(current => [payload.new as Decision, ...current]);
           } else if (payload.eventType === 'UPDATE') {
@@ -298,7 +299,6 @@ export default function DecisionsPage() {
 
       const { data: updatedData, error } = await supabase
         .from("decisions")
-        // @ts-expect-error - Supabase type inference issue with update method
         .update(updates)
         .eq("id", decisionId)
         .select()
@@ -480,7 +480,7 @@ export default function DecisionsPage() {
 
       if (data) {
         const approvalsByDecision: Record<string, DecisionApproval[]> = {};
-        data.forEach(approval => {
+        data.forEach((approval: Database['public']['Tables']['decision_approvals']['Row']) => {
           if (!approvalsByDecision[approval.decision_id]) {
             approvalsByDecision[approval.decision_id] = [];
           }

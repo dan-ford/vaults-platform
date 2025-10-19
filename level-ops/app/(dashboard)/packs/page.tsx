@@ -458,7 +458,7 @@ export default function PacksPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold truncate">{pack.title}</h3>
                     {pack.published_at && (
-                      <Shield className="h-4 w-4 text-primary flex-shrink-0" title="Published (Immutable)" />
+                      <Shield className="h-4 w-4 text-primary flex-shrink-0" aria-label="Published (Immutable)" />
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">

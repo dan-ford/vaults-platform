@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import type { Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { useOrganization } from "@/lib/context/organization-context";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionGuard } from "@/components/permissions";
@@ -94,7 +96,7 @@ export default function FinancePage() {
           table: 'financial_snapshots',
           filter: `org_id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['financial_snapshots']['Row']>) => {
           if (payload.eventType === 'INSERT') {
             setSnapshots(current => [payload.new as FinancialSnapshot, ...current].slice(0, 12));
           } else if (payload.eventType === 'UPDATE') {
@@ -134,9 +136,13 @@ export default function FinancePage() {
           </p>
         </div>
         <PermissionGuard require="edit">
-          <Button onClick={() => setIsCreating(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Snapshot
+          <Button
+            onClick={() => setIsCreating(true)}
+            size="icon"
+            className="h-9 w-9"
+            aria-label="Add financial snapshot"
+          >
+            <Plus className="h-4 w-4" />
           </Button>
         </PermissionGuard>
       </div>

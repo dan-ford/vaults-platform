@@ -1,6 +1,28 @@
 # Known Issues
 
-**Last Updated:** 2025-10-15
+**Last Updated:** 2025-10-19
+
+---
+
+## Recently Resolved Issues (October 19, 2025)
+
+### ✅ Fixed: executiveLayerEnabled Reference Errors (Commit 8105516)
+**Issue:** Finance and Metrics pages referenced removed feature flag
+**Impact:** Build failures during Vercel prerendering
+**Resolution:** Removed all executiveLayerEnabled references
+**Status:** RESOLVED - Deployed to production
+
+### ✅ Fixed: PermissionGuard Prop Mismatch (Commit 95fdcb1)
+**Issue:** Pages used incorrect `action="edit"` instead of `require="edit"`
+**Impact:** Add buttons not rendering on Finance and Metrics pages
+**Resolution:** Corrected prop names to match PermissionGuard API
+**Status:** RESOLVED - Deployed to production
+
+### ✅ Fixed: SelectItem Empty Value Error (Commit 4bd689b)
+**Issue:** KPI form used empty string value for "None" option
+**Impact:** Form crashes with Radix UI validation error
+**Resolution:** Changed to `value="none"` with null conversion logic
+**Status:** RESOLVED - Deployed to production
 
 ---
 

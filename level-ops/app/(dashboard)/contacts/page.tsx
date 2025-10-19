@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Users, Pencil, Trash2, Mail, Phone, Building2, LayoutGrid, LayoutList, SlidersHorizontal, X, MoreVertical } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import type { Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { useOrganization } from "@/lib/context/organization-context";
 import { useAuditLog } from "@/lib/hooks/use-audit-log";
 import { usePermissions } from "@/lib/hooks/use-permissions";
@@ -147,7 +149,7 @@ export default function ContactsPage() {
         });
       } else if (data) {
         // Ensure roles is an array (handle legacy data)
-        const normalizedData = data.map(contact => ({
+        const normalizedData = data.map((contact: Database['public']['Tables']['contacts']['Row']) => ({
           ...contact,
           roles: Array.isArray(contact.roles) ? contact.roles : []
         }));
@@ -156,7 +158,7 @@ export default function ContactsPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load contacts";
       setLoadError(errorMessage);
-      logError(err, {
+      logError(err instanceof Error ? err : new Error(String(err)), {
         action: "load_contacts",
         resource: "contacts",
       });
@@ -193,7 +195,7 @@ export default function ContactsPage() {
           table: 'contacts',
           filter: `org_id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['contacts']['Row']>) => {
           console.log('[Contacts Realtime]', payload.eventType, payload);
           if (payload.eventType === 'INSERT') {
             const newContact = { ...payload.new, roles: Array.isArray(payload.new.roles) ? payload.new.roles : [] } as Contact;
@@ -583,7 +585,7 @@ export default function ContactsPage() {
       org_id: currentOrg.id,
       tenant_id: null,
       created_by: user.id,
-    } as never);
+    });
 
     if (error) {
       console.error("Error creating contact:", error);
@@ -601,6 +603,7 @@ export default function ContactsPage() {
       roles: [],
       status: "active",
       notes: "",
+      avatar_url: null,
     });
   };
 
@@ -620,7 +623,7 @@ export default function ContactsPage() {
         roles: editingContact.roles,
         status: editingContact.status,
         notes: editingContact.notes || null,
-      } as never)
+      })
       .eq("id", editingContact.id);
 
     if (error) {

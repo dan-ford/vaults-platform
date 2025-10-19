@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { useOrganization } from "@/lib/context/organization-context";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionGuard, RoleBadge } from "@/components/permissions";
@@ -126,7 +128,7 @@ export default function ReportsPage() {
           table: "reports",
           filter: `org_id=eq.${currentOrg.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['reports']['Row']>) => {
           if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
             loadReports(); // Reload all to maintain proper sorting
           } else if (payload.eventType === "DELETE") {
@@ -462,7 +464,7 @@ export default function ReportsPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold truncate">{report.title}</h3>
                     {report.is_published && (
-                      <Shield className="h-4 w-4 text-primary flex-shrink-0" title="Published (Immutable)" />
+                      <Shield className="h-4 w-4 text-primary flex-shrink-0" aria-label="Published (Immutable)" />
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">

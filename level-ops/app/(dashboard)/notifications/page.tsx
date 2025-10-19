@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import { RoleBadge } from "@/components/permissions";
 import type { Database } from "@/lib/supabase/database.types";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 type Notification = any; // Database["public"]["Tables"]["notifications"]["Row"];
 
@@ -33,7 +34,7 @@ export default function NotificationsPage() {
           schema: "public",
           table: "notifications",
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['notifications']['Row']>) => {
           if (payload.eventType === "INSERT") {
             setNotifications((prev) => [payload.new as Notification, ...prev]);
           } else if (payload.eventType === "UPDATE") {
