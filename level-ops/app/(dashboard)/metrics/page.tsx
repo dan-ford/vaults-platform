@@ -98,7 +98,7 @@ export default function MetricsPage() {
 
   // Load on mount and when page becomes visible
   useEffect(() => {
-    if (!currentOrg || !executiveLayerEnabled) return;
+    if (!currentOrg) return;
 
     loadData();
 
@@ -110,11 +110,11 @@ export default function MetricsPage() {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [supabase, currentOrg?.id, executiveLayerEnabled]);
+  }, [supabase, currentOrg?.id]);
 
   // Realtime subscription for KPIs
   useEffect(() => {
-    if (!currentOrg || !executiveLayerEnabled) return;
+    if (!currentOrg) return;
 
     const channel = supabase
       .channel('kpis-changes')
@@ -141,11 +141,11 @@ export default function MetricsPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, currentOrg?.id, executiveLayerEnabled]);
+  }, [supabase, currentOrg?.id]);
 
   // Realtime subscription for measurements
   useEffect(() => {
-    if (!currentOrg || !executiveLayerEnabled) return;
+    if (!currentOrg) return;
 
     const channel = supabase
       .channel('kpi-measurements-changes')
@@ -181,11 +181,7 @@ export default function MetricsPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, currentOrg?.id, executiveLayerEnabled]);
-
-  if (!executiveLayerEnabled) {
-    return null;
-  }
+  }, [supabase, currentOrg?.id]);
 
   if (isLoading) {
     return (
