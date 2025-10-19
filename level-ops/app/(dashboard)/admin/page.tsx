@@ -226,25 +226,22 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="container-xl space-y-5 pb-20 md:pb-5 animate-fade-in">
-      <header className="flex items-start justify-between pb-3 border-b border-gray-200">
-        <div className="space-y-0.5">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <Shield className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground tracking-tight">Vaults Admin</h1>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Platform administration • {organizations.length} {terms.vaultsLower}
-            </p>
-            <RoleBadge />
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <Shield className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight">Vaults Admin</h1>
           </div>
+          <p className="text-muted-foreground mt-1">
+            Platform administration • {organizations.length} {terms.vaultsLower}
+          </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="shrink-0">
           <Plus className="w-4 h-4 mr-2" />
           Create {terms.vault}
         </Button>
-      </header>
+      </div>
 
       {/* Organizations List */}
       <Card className="p-6">
@@ -256,30 +253,28 @@ export default function AdminPage() {
             {organizations.map((org) => (
               <div
                 key={org.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors gap-4"
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    {org.logo_url ? (
-                      <img
-                        src={org.logo_url}
-                        alt={org.name}
-                        className="h-10 w-10 object-contain"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded bg-gray-200 flex items-center justify-center">
-                        <Building2 className="h-6 w-6 text-gray-500" />
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-medium text-lg">{org.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        /{org.slug}
-                      </p>
+                <div className="flex items-center gap-3">
+                  {org.logo_url ? (
+                    <img
+                      src={org.logo_url}
+                      alt={org.name}
+                      className="h-10 w-10 object-contain flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded bg-gray-200 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="h-6 w-6 text-gray-500" />
                     </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-medium text-lg truncate">{org.name}</p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      /{org.slug}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm font-medium">

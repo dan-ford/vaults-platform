@@ -749,16 +749,15 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container-xl space-y-5 pb-20 md:pb-5 animate-fade-in">
-      <header className="flex items-start justify-between pb-3 border-b border-gray-200">
-        <div className="space-y-1.5">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Settings</h1>
-          <p className="text-sm text-muted-foreground">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground mt-1">
             {currentOrg ? `Manage ${currentOrg.name} settings and team members` : 'Manage your profile and preferences'}
           </p>
-          <RoleBadge />
         </div>
-      </header>
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-200 overflow-x-auto">

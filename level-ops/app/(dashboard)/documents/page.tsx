@@ -712,25 +712,24 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="container-xl space-y-5 pb-20 animate-fade-in">
+    <div className="space-y-6">
       {/* Page Header */}
-      <header className="flex items-start justify-between pb-3 border-b border-gray-200">
-        <div className="space-y-1.5">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Documents</h1>
-          <p className="text-sm text-muted-foreground">Manage project documents and files</p>
-          <RoleBadge />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Documents</h1>
+          <p className="text-muted-foreground mt-1">Manage project documents and files</p>
         </div>
         <PermissionGuard require="create">
           <Button
             onClick={() => setIsUploading(true)}
             size="icon"
-            className="bg-primary hover:bg-primary/90 text-white rounded-lg h-9 w-9 shadow-sm hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-9 w-9 shrink-0"
             aria-label="Upload new document"
           >
             <Plus className="h-4 w-4" />
           </Button>
         </PermissionGuard>
-      </header>
+      </div>
 
       {/* Upload Document Dialog */}
       <Dialog open={isUploading} onOpenChange={setIsUploading}>

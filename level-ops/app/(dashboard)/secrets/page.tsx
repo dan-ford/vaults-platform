@@ -464,25 +464,24 @@ export default function SecretsPage() {
   };
 
   return (
-    <div className="container-xl space-y-5 pb-20 animate-fade-in">
+    <div className="space-y-6">
       {/* Page Header */}
-      <header className="flex items-start justify-between pb-3 border-b border-gray-200">
-        <div className="space-y-1.5">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Secrets</h1>
-          <p className="text-sm text-muted-foreground">Securely store and manage trade secrets with cryptographic sealing</p>
-          <RoleBadge />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Secrets</h1>
+          <p className="text-muted-foreground mt-1">Securely store and manage trade secrets with cryptographic sealing</p>
         </div>
         <PermissionGuard require="create">
           <Button
             onClick={() => setIsCreating(true)}
             size="icon"
-            className="bg-primary hover:bg-primary/90 text-white rounded-lg h-9 w-9 shadow-sm hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-9 w-9 shrink-0"
             aria-label="Create new secret"
           >
             <Plus className="h-4 w-4" />
           </Button>
         </PermissionGuard>
-      </header>
+      </div>
 
       {/* Create Secret Dialog */}
       <Dialog open={isCreating} onOpenChange={setIsCreating}>

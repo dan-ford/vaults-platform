@@ -650,24 +650,23 @@ export default function DecisionsPage() {
   }
 
   return (
-    <div className="container-xl space-y-5 pb-20 md:pb-5 animate-fade-in">
-      <header className="flex items-start justify-between pb-3 border-b border-gray-200">
-        <div className="space-y-1.5">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Decisions</h1>
-          <p className="text-sm text-muted-foreground">Record important project decisions and their rationale</p>
-          <RoleBadge />
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Decisions</h1>
+          <p className="text-muted-foreground mt-1">Record important project decisions and their rationale</p>
         </div>
         <PermissionGuard require="create">
           <Button
             size="icon"
             onClick={() => setIsCreating(true)}
-            className="bg-primary hover:bg-primary/90 text-white rounded-lg h-9 w-9 shadow-sm hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-9 w-9 shrink-0"
             aria-label="Add new decision"
           >
             <Plus className="h-4 w-4" />
           </Button>
         </PermissionGuard>
-      </header>
+      </div>
 
       {decisions.length === 0 ? (
         <Card className="p-16 flex flex-col items-center justify-center text-center">

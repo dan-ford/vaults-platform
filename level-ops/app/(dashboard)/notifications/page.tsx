@@ -271,10 +271,10 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="container-xl space-y-5 pb-20 animate-fade-in">
-      <header className="flex items-start justify-between pb-3 border-b border-gray-200">
-        <div className="space-y-1.5">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
             Notifications
             {unreadCount > 0 && (
               <span className="ml-3 text-sm font-normal text-muted-foreground">
@@ -282,12 +282,11 @@ export default function NotificationsPage() {
               </span>
             )}
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-1">
             Stay updated on vault activities and invitations
           </p>
-          <RoleBadge />
         </div>
-      </header>
+      </div>
 
       {notifications.length === 0 ? (
         <Card className="p-16 flex flex-col items-center justify-center text-center">
