@@ -35,9 +35,9 @@ const MENU_ITEMS: MenuItem[] = [
   { href: "/requests", icon: MessageSquare, label: "Requests" },
   { href: "/documents", icon: FileStack, label: "Documents" },
   { href: "/decisions", icon: Scale, label: "Decisions" },
-  { href: "/members", icon: Users, label: "Members" },
+  { href: "/contacts", icon: Users, label: "Members" },
   { href: "/secrets", icon: Lock, label: "Secrets" },
-  { href: "/profile", icon: Building, label: "Vault Profile" },
+  { href: "/vault-profile", icon: Building, label: "Vault Profile" },
 ];
 
 interface MobileMenuSheetProps {
@@ -51,7 +51,7 @@ export function MobileMenuSheet({ open, onOpenChange }: MobileMenuSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[90vh] flex flex-col p-0 rounded-t-xl">
-        <SheetHeader className="px-4 py-3 border-b">
+        <SheetHeader className="px-4 pt-6 pb-3 border-b text-left">
           <SheetTitle>Vault Modules</SheetTitle>
           <SheetDescription>Access vault management features</SheetDescription>
         </SheetHeader>

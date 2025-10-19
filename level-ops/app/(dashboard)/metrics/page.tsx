@@ -187,16 +187,14 @@ export default function MetricsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-4 sm:p-6">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading metrics...</p>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Loading metrics...</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Metrics</h1>

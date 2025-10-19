@@ -274,7 +274,7 @@ export default function VaultProfilePage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-[95vw] md:max-w-6xl">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold">Organisation Profile</h1>

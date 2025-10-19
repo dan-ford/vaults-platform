@@ -115,10 +115,8 @@ export default function FinancePage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-4 sm:p-6">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading financial data...</p>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Loading financial data...</p>
       </div>
     );
   }
@@ -127,7 +125,7 @@ export default function FinancePage() {
   const previousSnapshot = snapshots[1];
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Finance</h1>

@@ -32,7 +32,7 @@ const SYSTEM_MENU_ITEMS: SystemMenuItem[] = [
   { href: "/notifications", icon: Bell, label: "Notifications" },
   { href: "/search", icon: Search, label: "Search" },
   { href: "/settings", icon: Settings, label: "Settings" },
-  { href: "/vaults", icon: Building2, label: "Vaults" },
+  { href: "/admin", icon: Building2, label: "Vaults" },
   { href: "/admin", icon: Shield, label: "Admin" },
 ];
 
@@ -47,7 +47,7 @@ export function MobileSystemMenu({ open, onOpenChange }: MobileSystemMenuProps) 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[90vh] flex flex-col p-0 rounded-t-xl">
-        <SheetHeader className="px-4 py-3 border-b">
+        <SheetHeader className="px-4 pt-6 pb-3 border-b text-left">
           <SheetTitle>Menu</SheetTitle>
           <SheetDescription>System settings and navigation</SheetDescription>
         </SheetHeader>

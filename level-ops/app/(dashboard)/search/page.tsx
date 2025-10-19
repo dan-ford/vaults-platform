@@ -102,7 +102,7 @@ export default function SearchPage() {
 
       {/* Search Bar */}
       <div className="p-4 border-b bg-muted/30">
-        <div className="flex gap-2 max-w-[95vw] md:max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row gap-2 max-w-[95vw] md:max-w-4xl mx-auto">
           <Input
             type="text"
             placeholder="Ask a question about your documents..."
@@ -114,9 +114,10 @@ export default function SearchPage() {
           <Button
             onClick={handleSearch}
             disabled={isSearching || !query.trim()}
+            className="w-full sm:w-auto"
           >
-            <Search className="h-4 w-4 mr-2" />
-            {isSearching ? 'Searching...' : 'Search'}
+            <Search className="h-4 w-4 sm:mr-2" />
+            <span className="sm:inline">{isSearching ? 'Searching...' : 'Search'}</span>
           </Button>
         </div>
       </div>
