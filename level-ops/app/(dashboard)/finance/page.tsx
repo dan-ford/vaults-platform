@@ -133,7 +133,7 @@ export default function FinancePage() {
             Track ARR, revenue, cash, burn, and runway metrics
           </p>
         </div>
-        <PermissionGuard action="edit">
+        <PermissionGuard require="edit">
           <Button onClick={() => setIsCreating(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Snapshot
@@ -149,7 +149,7 @@ export default function FinancePage() {
             <p className="text-muted-foreground text-center max-w-md mb-4">
               Start tracking your financial metrics to monitor business health and communicate progress to stakeholders.
             </p>
-            <PermissionGuard action="edit">
+            <PermissionGuard require="edit">
               <Button onClick={() => setIsCreating(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create your first snapshot

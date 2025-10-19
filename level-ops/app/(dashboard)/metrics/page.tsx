@@ -202,7 +202,7 @@ export default function MetricsPage() {
             Track core KPIs with trends and variance notes
           </p>
         </div>
-        <PermissionGuard action="edit">
+        <PermissionGuard require="edit">
           <Button onClick={() => setIsCreating(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add KPI
@@ -218,7 +218,7 @@ export default function MetricsPage() {
             <p className="text-muted-foreground text-center max-w-md mb-4">
               Start tracking your key performance indicators to monitor business health and growth.
             </p>
-            <PermissionGuard action="edit">
+            <PermissionGuard require="edit">
               <Button onClick={() => setIsCreating(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create your first KPI
