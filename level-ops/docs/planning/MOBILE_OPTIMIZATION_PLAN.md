@@ -1542,6 +1542,47 @@ export function TouchTarget({
 **Testing**: ✅ Manual smoke test on iPhone SE (375px) - PASSED
 **Build Status**: ✅ npm run build PASSES (type errors remain but non-blocking)
 
+### Phase 1.5: Dashboard Pages Optimization - ✅ COMPLETE (October 19, 2025)
+**Goal**: Fix remaining mobile layout issues across all dashboard pages
+
+**Completed Commits**:
+- 38fc91b - fix: optimize all dashboard pages for mobile breakpoint
+- 992d897 - fix: mobile UI issues - layout, routing, and navigation
+
+**Files Changed**: 8 dashboard pages + navigation files
+
+**Pages Fixed**:
+1. ✅ Metrics - Removed responsive text sizing, standardized to text-3xl
+2. ✅ Finance - Removed responsive text sizing, standardized to text-3xl
+3. ✅ Documents - Removed container-xl, simplified header
+4. ✅ Decisions - Removed container-xl, simplified header
+5. ✅ Secrets - Removed container-xl, simplified header
+6. ✅ Notifications - Removed container-xl, simplified header
+7. ✅ Settings - Removed container-xl, simplified header
+8. ✅ Admin (Vaults) - Removed container-xl, fixed card stacking (grid-cols-1 sm:grid-cols-2 lg:grid-cols-3)
+
+**Routing Issues Fixed**:
+1. ✅ /members 404 → Fixed to use /contacts route
+2. ✅ /vaults 404 → Fixed to use /admin route
+3. ✅ Vault Profile link → Changed from /profile to /vault-profile
+4. ✅ Search page mobile layout → Fixed layout issues
+
+**Navigation Improvements**:
+- ✅ Menu dialog alignment fixed on mobile
+- ✅ Mobile menu sheet usability improved
+- ✅ All navigation links point to correct routes
+
+**Success Criteria**:
+- ✅ All dashboard pages fit 375px-428px viewports without overflow
+- ✅ No horizontal scrolling on any page
+- ✅ Consistent header styling (text-3xl font-bold tracking-tight)
+- ✅ Cards stack properly on mobile without overlapping
+- ✅ All routing links correct (no 404 errors)
+- ✅ Build passes successfully (no new errors)
+
+**Testing**: ✅ Verified across all 8 pages on mobile viewport
+**Build Status**: ✅ npm run build PASSES (exit code 0)
+
 ### Phase 2: Priority 1 Modules (Week 2)
 **Goal**: Refactor complex workflows for mobile
 

@@ -12,8 +12,12 @@ from models import (
     IngestStatus,
     DeleteChunksRequest,
     DeleteResponse,
+    AnalyzeFinancialDocumentRequest,
+    FinancialAnalysisResponse,
 )
 from services import DocumentProcessor
+from services.financial_analyzer import FinancialAnalyzer, FinancialAnalyzerError
+from supabase import create_client
 
 # Configure logging
 logging.basicConfig(
@@ -40,6 +44,13 @@ app.add_middleware(
 
 # Initialize services
 processor = DocumentProcessor()
+
+# Initialize Supabase client for financial analyzer
+supabase_client = create_client(
+    settings.SUPABASE_URL,
+    settings.SUPABASE_SERVICE_KEY
+)
+financial_analyzer = FinancialAnalyzer(supabase_client)
 
 
 @app.get("/health")
@@ -143,6 +154,60 @@ async def delete_chunks(request: DeleteChunksRequest):
             chunks_deleted=0,
             error_message=str(e),
         )
+
+
+@app.post("/analyze-financial-document", response_model=FinancialAnalysisResponse)
+async def analyze_financial_document(
+    request: AnalyzeFinancialDocumentRequest, background_tasks: BackgroundTasks
+):
+    """
+    Analyze a financial document (XLS/CSV) and extract metrics using AI.
+
+    Process runs in background to avoid timeout on large files.
+    """
+    logger.info(
+        f"Analyzing financial document {request.document_id} for org {request.org_id}"
+    )
+
+    try:
+        # Start analysis in background
+        background_tasks.add_task(
+            financial_analyzer.analyze_document,
+            str(request.document_id),
+            str(request.org_id),
+            str(request.user_id),
+        )
+
+        # Return immediate response with pending status
+        return FinancialAnalysisResponse(
+            analysis_id=request.document_id,  # Will be created in background
+            status="pending",
+            needs_review=False,
+            processing_time_ms=None,
+            error_message=None,
+        )
+
+    except Exception as e:
+        logger.error(f"Financial analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/analysis-status/{analysis_id}/{org_id}")
+async def get_analysis_status(analysis_id: str, org_id: str):
+    """
+    Get the current status and results of a financial analysis.
+
+    Returns full analysis record including extracted metrics if complete.
+    """
+    try:
+        status = await financial_analyzer.get_analysis_status(analysis_id, org_id)
+        return status
+    except FinancialAnalyzerError as e:
+        logger.error(f"Analysis status check error: {str(e)}")
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error checking analysis status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

@@ -130,3 +130,32 @@ class DeleteResponse(BaseModel):
                 "error_message": None,
             }
         }
+
+
+class FinancialAnalysisResponse(BaseModel):
+    """
+    Response from financial document analysis
+    """
+
+    analysis_id: UUID = Field(..., description="Analysis record UUID")
+    status: Literal["pending", "processing", "completed", "review", "failed"] = Field(
+        ..., description="Analysis status"
+    )
+    needs_review: bool = Field(
+        ..., description="Whether results need human review (low confidence)"
+    )
+    processing_time_ms: Optional[int] = Field(
+        None, description="Processing time in milliseconds"
+    )
+    error_message: Optional[str] = Field(None, description="Error message if failed")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "analysis_id": "123e4567-e89b-12d3-a456-426614174003",
+                "status": "review",
+                "needs_review": True,
+                "processing_time_ms": 4523,
+                "error_message": None,
+            }
+        }

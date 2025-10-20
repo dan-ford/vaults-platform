@@ -90,3 +90,22 @@ class DeleteChunksRequest(BaseModel):
                 "org_id": "123e4567-e89b-12d3-a456-426614174001",
             }
         }
+
+
+class AnalyzeFinancialDocumentRequest(BaseModel):
+    """
+    Request to analyze a financial document (XLS/CSV) and extract metrics
+    """
+
+    document_id: UUID = Field(..., description="UUID of the document to analyze")
+    org_id: UUID = Field(..., description="Organization UUID for RLS scoping")
+    user_id: UUID = Field(..., description="User ID who initiated the analysis")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "document_id": "123e4567-e89b-12d3-a456-426614174000",
+                "org_id": "123e4567-e89b-12d3-a456-426614174001",
+                "user_id": "123e4567-e89b-12d3-a456-426614174002",
+            }
+        }
