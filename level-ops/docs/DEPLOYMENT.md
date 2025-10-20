@@ -216,6 +216,33 @@ TOP_K_MMR=15
 TOP_K_FINAL=5
 ```
 
+### Step 3.5: Verify Python Dependencies
+
+**Finance Module Requirements (Added October 2025):**
+
+The agent backend now requires additional Python libraries for financial document parsing:
+
+```bash
+# Already in agent/requirements.txt
+pandas==2.1.0      # Universal data parsing (XLS, CSV, Excel)
+openpyxl==3.1.2    # Advanced Excel format support (.xlsx)
+xlrd==2.0.1        # Legacy Excel support (.xls)
+```
+
+**Verification:**
+```bash
+# Check Railway deployment logs
+railway logs | grep "pandas\|openpyxl\|xlrd"
+
+# Should see successful imports:
+# Successfully installed pandas-2.1.0 openpyxl-3.1.2 xlrd-2.0.1
+```
+
+**If missing:**
+1. Verify `agent/requirements.txt` includes these dependencies
+2. Trigger redeployment: `git push origin main`
+3. Monitor Railway logs for successful install
+
 2. **Get OpenAI API Key:**
    - Go to: https://platform.openai.com/api-keys
    - Create new secret key

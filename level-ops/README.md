@@ -67,7 +67,7 @@ Required variables (see `.env.example`):
 ### Executive Layer (New - October 2025)
 - **Vault Profile**: Organization home with mission/vision/values, OKRs, and recent activity
 - **Metrics**: KPI tracking with trend indicators and target monitoring
-- **Finance**: Monthly financial snapshots (ARR, revenue, cash, burn, runway)
+- **Finance**: Monthly financial snapshots (ARR, revenue, cash, burn, runway) with AI-powered document analysis (upload XLS/CSV → GPT-4 extracts metrics → review & approve)
 - **Reports**: Executive summaries with multi-stage approval workflow and SHA-256 hashing
 - **Packs**: Immutable board pack generation with agenda builder and attendee management
 - **Requests**: Investor Q&A workflow with response tracking and notifications
@@ -98,7 +98,7 @@ Required variables (see `.env.example`):
 - **Key Contacts**: Structured contact management for executives and stakeholders
 
 ### AI Assistant
-- **24 AI Actions**: Complete CRUD operations via natural language
+- **Comprehensive AI Action Library**: 28+ actions for complete CRUD operations via natural language
 - **RAG Document Search**: Hybrid vector + BM25 search across uploaded PDFs
 - **Real-Time Context**: AI always has access to current vault data
 - **Audit Logging**: All AI actions tracked with before/after snapshots

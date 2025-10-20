@@ -124,7 +124,7 @@ CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
 ```sql
 CREATE TABLE IF NOT EXISTS document_chunks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
   chunk_index INTEGER NOT NULL CHECK (chunk_index >= 0),
   content TEXT NOT NULL CHECK (length(content) > 0),

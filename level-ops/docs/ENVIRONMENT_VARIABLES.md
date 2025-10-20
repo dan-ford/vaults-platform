@@ -72,9 +72,12 @@ NEXT_PUBLIC_COPILOT_CLOUD_API_KEY=ck_pub_ab4d5b7b38e07de9596b6f6530b780de
 # Cost: ~$5-20/month for basic tier
 FASTAPI_URL=https://vaults-agent.railway.app
 
-# OpenAI API key for embeddings (required if RAG enabled)
+# OpenAI API key for AI features (required for RAG + Finance analysis)
 # Get from: https://platform.openai.com/api-keys
-# Cost: ~$0.10 per 1M tokens (embeddings are cheap)
+# Used for:
+#   1. RAG embeddings (text-embedding-3-small) - ~$0.10 per 1M tokens
+#   2. Finance document analysis (GPT-4-turbo) - ~$0.01-0.03 per document
+# Cost estimate: $10-30/month for typical usage
 OPENAI_API_KEY=sk-proj-...
 ```
 
@@ -255,7 +258,8 @@ WHATSAPP_PHONE_NUMBER_ID=
 - Reports generation
 - White-label branding
 - Notifications (in-app only)
-- AI assistant (24+ actions)
+- AI assistant (28+ actions)
+- Finance module with AI document analysis (XLS/CSV upload → GPT-4 extraction)
 
 **Features Disabled/Limited:**
 - AI document search (no RAG backend)

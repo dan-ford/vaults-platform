@@ -84,7 +84,10 @@ agent/
 ├── services/            # Business logic
 │   ├── embedder.py
 │   ├── pdf_extractor.py
-│   └── document_processor.py
+│   ├── document_processor.py
+│   ├── file_parser.py          # NEW: Parse XLS/CSV financial documents
+│   ├── openai_financial.py     # NEW: GPT-4 financial metric extraction
+│   └── financial_analyzer.py   # NEW: Orchestrate analysis workflow
 └── README.md            # This file
 ```
 
@@ -92,6 +95,8 @@ agent/
 
 - `POST /ingest` — Ingest a document (chunk + embed)
 - `POST /delete-chunks` — Delete chunks for a document
+- `POST /analyze-financial-document` — Analyze financial document (XLS/CSV)
+- `GET /analysis-status/{analysis_id}/{org_id}` — Get analysis progress
 - `GET /health` — Health check
 
 See `/docs` for interactive API documentation.

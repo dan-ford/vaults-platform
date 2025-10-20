@@ -312,6 +312,50 @@ Generated summaries (weekly exec, board packs)
 
 ---
 
+#### `financial_analyses`
+
+AI-powered financial document analysis results
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `uuid` | PK, DEFAULT `gen_random_uuid()` | Analysis ID |
+| `org_id` | `uuid` | FK → `organizations(id)` ON DELETE CASCADE | Owner org |
+| `document_id` | `uuid` | FK → `documents(id)` ON DELETE CASCADE | Source document |
+| `file_type` | `text` | NOT NULL, CHECK IN ('xlsx', 'xls', 'csv', 'pdf', 'other') | File format |
+| `analysis_status` | `text` | NOT NULL, DEFAULT 'pending' | Status (pending/processing/completed/failed/review) |
+| `raw_analysis` | `jsonb` | NOT NULL | Complete GPT-4 response |
+| `confidence_score` | `numeric(3,2)` | NULLABLE | AI confidence (0.00-1.00) |
+| `extracted_data` | `jsonb` | NULLABLE | Structured financial metrics |
+| `ai_insights` | `text[]` | NULLABLE | Array of insight strings |
+| `ai_recommendations` | `text[]` | NULLABLE | Array of recommendations |
+| `detected_issues` | `text[]` | NULLABLE | Detected problems/warnings |
+| `reviewed_by` | `uuid` | FK → `auth.users(id)` | Reviewer user ID |
+| `reviewed_at` | `timestamptz` | NULLABLE | Review timestamp |
+| `approved` | `boolean` | DEFAULT FALSE | Approval status |
+| `snapshot_id` | `uuid` | FK → `financial_snapshots(id)` | Created snapshot (if approved) |
+| `error_message` | `text` | NULLABLE | Error details if failed |
+| `processing_time_ms` | `integer` | NULLABLE | Processing duration |
+| `created_by` | `uuid` | FK → `auth.users(id)` | Uploader |
+| `created_at` | `timestamptz` | NOT NULL, DEFAULT NOW() | Creation |
+| `updated_at` | `timestamptz` | NOT NULL, DEFAULT NOW() | Last update |
+
+**Indexes:**
+- Primary key on `id`
+- Index on `org_id`
+- Index on `(org_id, analysis_status)` (filtered queries)
+- Index on `(org_id, created_at DESC)` (recent analyses)
+
+**RLS:**
+- SELECT: Member of org
+- INSERT: `EDITOR+` role in org
+- UPDATE: `EDITOR+` role in org
+- DELETE: N/A (analyses are retained for audit trail)
+
+**Realtime:**
+- Enabled via `supabase_realtime` publication
+
+---
+
 ### 2.4 Documents & RAG
 
 #### `documents`

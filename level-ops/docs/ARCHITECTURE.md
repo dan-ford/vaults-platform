@@ -287,6 +287,39 @@ Answer with inline citations (doc/page/chunk)
 8. Investor receives notification → views response
 ```
 
+### 3.4 Finance Module - AI Document Analysis
+
+```
+1. User uploads financial document (XLS/XLSX/CSV) to Finance page
+2. Document stored in Supabase Storage (org-scoped path)
+3. Next.js API route `/api/finance/analyze-document` called
+4. FastAPI backend endpoint `/analyze-financial-document` invoked
+5. Backend pipeline:
+   a. file_parser.py extracts sheet structure (pandas/openpyxl)
+   b. openai_financial.py calls GPT-4-turbo with extraction prompt
+   c. financial_analyzer.py orchestrates workflow
+   d. Returns JSON with metrics + confidence scores
+6. Analysis stored in financial_analyses table (RLS-enforced)
+7. Frontend displays AnalysisReviewCard component:
+   a. Shows extracted metrics with confidence indicators
+   b. Highlights low-confidence fields (<0.5) in yellow
+   c. Allows manual corrections before approval
+8. User approves → creates financial_snapshot record
+9. Agent can interact via natural language:
+   a. createFinancialSnapshot
+   b. updateFinancialSnapshot
+   c. getLatestFinancialSnapshot
+   d. deleteFinancialSnapshot (ADMIN/OWNER only)
+10. All agent actions logged to audit_log with before/after snapshots
+```
+
+**Key Components:**
+- **Backend Services:** 3 Python services (file_parser, openai_financial, financial_analyzer)
+- **API Routes:** 2 Next.js routes (analyze-document, analysis-status/[id])
+- **UI Components:** 4 React components (upload dialog, review card, analysis list, table)
+- **Agent Actions:** 4 CopilotKit actions with permission checks
+- **Model:** GPT-4-turbo with structured JSON output
+
 ---
 
 ## 4) White-Label & Multitenancy
