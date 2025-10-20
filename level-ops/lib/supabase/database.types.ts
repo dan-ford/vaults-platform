@@ -577,6 +577,97 @@ export type Database = {
           },
         ]
       }
+      financial_analyses: {
+        Row: {
+          ai_insights: string[] | null
+          ai_recommendations: string[] | null
+          analysis_status: string
+          approved: boolean | null
+          confidence_score: number | null
+          created_at: string
+          created_by: string
+          detected_issues: string[] | null
+          document_id: string
+          error_message: string | null
+          extracted_data: Json | null
+          file_type: string
+          id: string
+          org_id: string
+          processing_time_ms: number | null
+          raw_analysis: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          snapshot_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_insights?: string[] | null
+          ai_recommendations?: string[] | null
+          analysis_status?: string
+          approved?: boolean | null
+          confidence_score?: number | null
+          created_at?: string
+          created_by: string
+          detected_issues?: string[] | null
+          document_id: string
+          error_message?: string | null
+          extracted_data?: Json | null
+          file_type: string
+          id?: string
+          org_id: string
+          processing_time_ms?: number | null
+          raw_analysis: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          snapshot_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_insights?: string[] | null
+          ai_recommendations?: string[] | null
+          analysis_status?: string
+          approved?: boolean | null
+          confidence_score?: number | null
+          created_at?: string
+          created_by?: string
+          detected_issues?: string[] | null
+          document_id?: string
+          error_message?: string | null
+          extracted_data?: Json | null
+          file_type?: string
+          id?: string
+          org_id?: string
+          processing_time_ms?: number | null
+          raw_analysis?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          snapshot_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_analyses_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_analyses_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_analyses_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "financial_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_snapshots: {
         Row: {
           arr: number | null
