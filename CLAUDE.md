@@ -220,6 +220,32 @@ All dialogs MUST be responsive and scrollable:
 
 ---
 
+## Mobile Button Pattern (Required for All Dashboard Pages)
+All dashboard page headers MUST use mobile-optimized button sizing:
+
+```tsx
+<div className="flex flex-row items-center justify-between gap-4">
+  <h1 className="text-3xl font-bold tracking-tight">Page Title</h1>
+  <Button
+    size="icon"
+    variant="outline"
+    onClick={handleCreate}
+    className="h-[18px] w-[18px] sm:h-9 sm:w-9 shrink-0"
+  >
+    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+  </Button>
+</div>
+```
+
+**Key Requirements:**
+- Always use `flex-row` (not `flex-col sm:flex-row`)
+- Button sizing: `h-[18px] w-[18px] sm:h-9 sm:w-9`
+- Icon sizing: `h-3 w-3 sm:h-4 sm:w-4`
+- Always include `shrink-0` to prevent compression
+- Use `gap-4` for proper spacing
+
+---
+
 ## Definition of Done (any feature)
 - RLS-aware and tenant-safe.
 - **Realtime enabled** on any new tables (via `ALTER PUBLICATION supabase_realtime ADD TABLE table_name;`).

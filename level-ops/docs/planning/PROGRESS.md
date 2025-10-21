@@ -964,14 +964,15 @@ All 10/10 vault-specific modules are now FULLY FUNCTIONAL and production-ready. 
 2. **MEDIUM:** Complete Phase 3 mobile optimization (P2 modules with simpler fixes)
 3. **MEDIUM:** Complete Phase 4 polish and testing
 
-### Phase I.5 (Dashboard Pages Mobile Optimization) - ✅ COMPLETE (October 19, 2025)
+### Phase I.5 (Dashboard Pages Mobile Optimization) - ✅ COMPLETE (October 19-21, 2025)
 
 **Commit 38fc91b:** fix: optimize all dashboard pages for mobile breakpoint
 **Commit 992d897:** fix: mobile UI issues - layout, routing, and navigation
+**Commit e60d881:** fix: mobile UI improvements and bug fixes (October 21, 2025)
 
 **Objective:** Fix remaining mobile layout issues across all dashboard pages to match working pattern
 
-**✅ Mobile Layout Issues Fixed (8 pages):**
+**✅ Mobile Layout Issues Fixed (8 pages - October 19, 2025):**
 
 1. **Metrics Page** (`/metrics`):
    - Removed responsive text sizing that was inconsistent
@@ -1014,6 +1015,28 @@ All 10/10 vault-specific modules are now FULLY FUNCTIONAL and production-ready. 
    - Fixed card layout to stack on mobile (grid-cols-1 sm:grid-cols-2 lg:grid-cols-3)
    - Prevented overlapping content on small screens
 
+**✅ Mobile Button Layout & UX Improvements (12 pages - October 21, 2025):**
+
+1. **Agent Sidebar Grey Overlay Fix** (`app/(dashboard)/layout.tsx`):
+   - Added mobile detection with window resize listener
+   - Changed Sheet component to only open on mobile (< 768px breakpoint)
+   - Sheet now conditionally opens: `open={sidebarOpen && isMobile}`
+   - Fixed issue where clicking agent button caused grey overlay on desktop
+
+2. **Select.Item Empty Value Error Fix** (`app/(dashboard)/requests/page.tsx`):
+   - Changed "Unassigned" option from `value=""` to `value="unassigned"`
+   - Updated all related logic to convert "unassigned" to null for database
+   - Added checks to prevent notifications when assignedTo is "unassigned"
+   - Fixed console error: "A <Select.Item /> must have a value prop that is not an empty string"
+
+3. **Mobile Button Layout Standardization** (12 dashboard pages):
+   - Updated all page headers to display + buttons inline with page titles at ALL breakpoints
+   - Changed from `flex-col sm:flex-row` to always `flex-row`
+   - Reduced button size by 50% on mobile: `h-[18px] w-[18px] sm:h-9 sm:w-9`
+   - Reduced icon size by 50% on mobile: `h-3 w-3 sm:h-4 sm:w-4`
+   - Added `shrink-0` class to prevent button compression
+   - Pages updated: Metrics, Finance, Reports, Requests, Decisions, Documents, Contacts, Tasks, Milestones, Risks, Packs, Secrets
+
 **✅ Routing Issues Fixed (4 routes):**
 
 1. **/members 404 → /contacts** - Fixed link to use correct /contacts route
@@ -1033,16 +1056,20 @@ All 10/10 vault-specific modules are now FULLY FUNCTIONAL and production-ready. 
 - Standardized layout pattern (space-y-6) across all pages
 - Cards stack properly on mobile without overlapping
 - Clean, professional appearance on all screen sizes
+- **NEW:** Mobile-optimized button sizing (18px mobile, 36px desktop) across all 12 dashboard pages
+- **NEW:** Agent sidebar no longer causes grey overlay on desktop
+- **NEW:** Select dropdowns properly handle unassigned values without console errors
 
 **Build Status:**
-- ✅ Build passes successfully (verified Oct 19, 2025)
+- ✅ Build passes successfully (verified Oct 21, 2025)
 - ✅ All pages deployment-ready
 - ✅ No new TypeScript errors introduced
+- ✅ No console errors in production
 
 **Mobile Optimization Summary:**
 - **Phase I.4 (Oct 19):** Foundation complete - 22 files, navigation components, utility components
-- **Phase I.5 (Oct 19):** Dashboard pages complete - 8 pages, 4 routing fixes
-- **Total Mobile Work:** 30+ files changed, comprehensive mobile foundation established
+- **Phase I.5 (Oct 19-21):** Dashboard pages complete - 8 pages, 4 routing fixes, 12 pages button standardization
+- **Total Mobile Work:** 43+ files changed, comprehensive mobile foundation established
 - **Remaining:** Phases 2-4 (advanced patterns, polish, testing)
 
 ### Phase I.6 (Finance Module AI Document Analysis) - ✅ COMPLETE

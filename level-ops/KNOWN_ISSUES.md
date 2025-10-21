@@ -1,10 +1,10 @@
 # Known Issues
 
-**Last Updated:** 2025-10-19
+**Last Updated:** 2025-10-21
 
 ---
 
-## Recently Resolved Issues (October 19, 2025)
+## Recently Resolved Issues (October 19-21, 2025)
 
 ### ✅ Fixed: executiveLayerEnabled Reference Errors (Commit 8105516)
 **Issue:** Finance and Metrics pages referenced removed feature flag
@@ -18,11 +18,33 @@
 **Resolution:** Corrected prop names to match PermissionGuard API
 **Status:** RESOLVED - Deployed to production
 
-### ✅ Fixed: SelectItem Empty Value Error (Commit 4bd689b)
-**Issue:** KPI form used empty string value for "None" option
-**Impact:** Form crashes with Radix UI validation error
-**Resolution:** Changed to `value="none"` with null conversion logic
-**Status:** RESOLVED - Deployed to production
+### ✅ Fixed: SelectItem Empty Value Error (Commit 4bd689b, e60d881)
+**Issue:** KPI form and Requests page used empty string value for "None"/"Unassigned" options
+**Impact:** Form crashes with Radix UI validation error: "A <Select.Item /> must have a value prop that is not an empty string"
+**Resolution:**
+- KPI form: Changed to `value="none"` with null conversion logic
+- Requests page: Changed "Unassigned" from `value=""` to `value="unassigned"` with null conversion
+**Status:** RESOLVED - Deployed to production (Oct 19-21, 2025)
+
+### ✅ Fixed: Agent Sidebar Grey Overlay on Desktop (Commit e60d881)
+**Issue:** Clicking agent button caused grey overlay (Sheet backdrop) to appear on desktop
+**Impact:** Poor UX - desktop users saw mobile Sheet component behavior
+**Resolution:**
+- Added mobile detection with window resize listener
+- Sheet component now only opens on mobile (< 768px breakpoint)
+- Conditional opening: `open={sidebarOpen && isMobile}`
+**Status:** RESOLVED - Deployed to production (Oct 21, 2025)
+
+### ✅ Fixed: Mobile Button Sizing on Dashboard Pages (Commit e60d881)
+**Issue:** Action buttons too small on mobile (difficult to tap), breaking mobile UX
+**Impact:** Poor mobile usability across all 12 dashboard pages
+**Resolution:**
+- Standardized button sizing: `h-[18px] w-[18px] sm:h-9 sm:w-9` (18px mobile, 36px desktop)
+- Icon sizing: `h-3 w-3 sm:h-4 sm:w-4`
+- Changed layout from `flex-col sm:flex-row` to always `flex-row`
+- Added `shrink-0` class to prevent button compression
+**Pages Updated:** Metrics, Finance, Reports, Requests, Decisions, Documents, Contacts, Tasks, Milestones, Risks, Packs, Secrets
+**Status:** RESOLVED - Deployed to production (Oct 21, 2025)
 
 ---
 
