@@ -451,7 +451,7 @@ export default function RisksPage() {
 
   return (
     <div className="container-xl space-y-5 pb-20 md:pb-5 animate-fade-in">
-      <header className="flex items-start justify-between pb-3 border-b border-gray-200">
+      <header className="flex flex-row items-center justify-between pb-3 border-b border-gray-200 gap-4">
         <div className="space-y-1.5">
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Risks</h1>
           <p className="text-sm text-muted-foreground">Identify and manage project risks</p>
@@ -461,10 +461,10 @@ export default function RisksPage() {
           <Button
             size="icon"
             onClick={() => setIsCreating(true)}
-            className="bg-primary hover:bg-primary/90 text-white rounded-lg h-9 w-9 shadow-sm hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="bg-primary hover:bg-primary/90 text-white rounded-lg h-[18px] w-[18px] sm:h-9 sm:w-9 shadow-sm hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0"
             aria-label="Add new risk"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </PermissionGuard>
       </header>

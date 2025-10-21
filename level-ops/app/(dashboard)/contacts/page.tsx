@@ -686,7 +686,7 @@ export default function ContactsPage() {
   return (
     <div className="container-xl space-y-4 pb-20 md:pb-5 animate-fade-in">
       {/* Simplified header */}
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex flex-row items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight truncate">Members</h1>
           <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
@@ -698,10 +698,10 @@ export default function ContactsPage() {
             <Button
               onClick={() => setIsCreating(true)}
               size="icon"
-              className="h-9 w-9"
+              className="h-[18px] w-[18px] sm:h-9 sm:w-9"
               aria-label="Add contact"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </PermissionGuard>
         </div>

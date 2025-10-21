@@ -25,11 +25,23 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showMobileSystemMenu, setShowMobileSystemMenu] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { currentOrg } = useOrganization();
 
   // Register CopilotKit actions
   useRagSearchAction();
   useReportActions();
+
+  // Detect mobile breakpoint (768px = md breakpoint in Tailwind)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Apply organization brand color as CSS variable
   useEffect(() => {
@@ -218,8 +230,8 @@ export default function DashboardLayout({
         </div>
       </div>
 
-      {/* Mobile: AI Assistant bottom sheet */}
-      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+      {/* Mobile: AI Assistant bottom sheet - only opens on mobile screens */}
+      <Sheet open={sidebarOpen && isMobile} onOpenChange={setSidebarOpen}>
         <SheetContent side="bottom" className="h-[85vh] md:hidden p-0">
           <SheetHeader className="px-4 py-3 border-b">
             <SheetTitle>AI Assistant</SheetTitle>

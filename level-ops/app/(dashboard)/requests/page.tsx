@@ -92,7 +92,7 @@ export default function RequestsPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
-  const [assignedTo, setAssignedTo] = useState<string>("");
+  const [assignedTo, setAssignedTo] = useState<string>("unassigned");
   const [dueDate, setDueDate] = useState("");
   const [response, setResponse] = useState("");
 
@@ -219,7 +219,7 @@ export default function RequestsPage() {
         title,
         description,
         priority,
-        assigned_to: assignedTo || null,
+        assigned_to: assignedTo === "unassigned" ? null : assignedTo,
         due_date: dueDate ? new Date(dueDate).toISOString() : null,
         org_id: currentOrg.id,
       };
@@ -235,7 +235,7 @@ export default function RequestsPage() {
         if (error) throw error;
 
         // Notify if assignment changed
-        if (assignedTo && assignedTo !== oldAssignedTo) {
+        if (assignedTo && assignedTo !== "unassigned" && assignedTo !== oldAssignedTo) {
           await createNotification({
             userId: assignedTo,
             type: "request_assigned",
@@ -259,7 +259,7 @@ export default function RequestsPage() {
         if (error) throw error;
 
         // Notify assigned person
-        if (assignedTo) {
+        if (assignedTo && assignedTo !== "unassigned") {
           await createNotification({
             userId: assignedTo,
             type: "request_created",
@@ -394,7 +394,7 @@ export default function RequestsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-row items-center justify-between gap-4">
         <div className="space-y-1.5">
           <h1 className="text-3xl font-bold tracking-tight">Requests</h1>
           <p className="text-muted-foreground mt-1">
@@ -403,8 +403,8 @@ export default function RequestsPage() {
           <RoleBadge />
         </div>
         <PermissionGuard require="create">
-          <Button onClick={handleCreateNew} size="icon" className="h-9 w-9" aria-label="Create request">
-            <Plus className="h-4 w-4" />
+          <Button onClick={handleCreateNew} size="icon" className="h-[18px] w-[18px] sm:h-9 sm:w-9" aria-label="Create request">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </PermissionGuard>
       </div>
@@ -672,7 +672,7 @@ export default function RequestsPage() {
                   <SelectValue placeholder="Select team member..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
                   {members.map((member) => (
                     <SelectItem key={member.user_id} value={member.user_id}>
                       {getMemberName(member.user_id)}
