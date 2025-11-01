@@ -9,7 +9,8 @@ import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionGuard, RoleBadge } from "@/components/permissions";
 import { ReportGenerator } from "@/lib/services/report-generator";
 import { generateContentHash } from "@/lib/utils/content-hash";
-import { FileText, Download, Trash2, Calendar, TrendingUp, BarChart, CheckCircle, XCircle, Send, Lock, Shield } from "lucide-react";
+import { useMediaQuery } from "@/lib/hooks/use-media-query";
+import { FileText, Download, Trash2, Calendar, TrendingUp, BarChart, CheckCircle, XCircle, Send, Lock, Shield, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,6 +21,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -76,13 +89,17 @@ export default function ReportsPage() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [reportType, setReportType] = useState<"weekly_summary" | "monthly_summary">("weekly_summary");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("current");
+  const [mobileDetailId, setMobileDetailId] = useState<string | null>(null);
+  const [expandedSection, setExpandedSection] = useState<string>("content");
 
   const { currentOrg } = useOrganization();
   const { hasPermission, role, canEdit, canDelete, isViewer, isOwner, isAdmin } = usePermissions();
   const supabase = createClient();
   const reportGenerator = new ReportGenerator();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const canApprove = isOwner || isAdmin;
+  const mobileDetailReport = reports.find(r => r.id === mobileDetailId);
 
   // Load reports
   const loadReports = async () => {
@@ -408,12 +425,13 @@ export default function ReportsPage() {
         </PermissionGuard>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex gap-2 flex-wrap">
+      {/* Filter Tabs - Horizontal scroll on mobile */}
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap scrollbar-hide">
         <Button
           variant={filter === "all" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("all")}
+          className="flex-shrink-0"
         >
           All
         </Button>
@@ -421,6 +439,7 @@ export default function ReportsPage() {
           variant={filter === "draft" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("draft")}
+          className="flex-shrink-0"
         >
           Drafts
         </Button>
@@ -428,6 +447,7 @@ export default function ReportsPage() {
           variant={filter === "pending_approval" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("pending_approval")}
+          className="flex-shrink-0"
         >
           Pending
         </Button>
@@ -435,6 +455,7 @@ export default function ReportsPage() {
           variant={filter === "approved" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("approved")}
+          className="flex-shrink-0"
         >
           Approved
         </Button>
@@ -442,6 +463,7 @@ export default function ReportsPage() {
           variant={filter === "published" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("published")}
+          className="flex-shrink-0"
         >
           <Lock className="h-3 w-3 mr-1" />
           Published
@@ -449,13 +471,14 @@ export default function ReportsPage() {
       </div>
 
       {/* Report Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {filteredReports.map((report) => (
           <div
             key={report.id}
             className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
               report.is_published ? "border-primary/50 bg-primary/5" : ""
-            }`}
+            } ${isMobile ? "cursor-pointer active:scale-[0.98]" : ""}`}
+            onClick={() => isMobile && setMobileDetailId(report.id)}
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2 flex-1">
@@ -499,9 +522,9 @@ export default function ReportsPage() {
               )}
             </div>
 
-            {/* Quick Stats */}
+            {/* Quick Stats - Desktop only */}
             {report.stats && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-xs">
+              <div className="hidden md:grid grid-cols-2 gap-2 mb-4 text-xs">
                 <div className="bg-gray-50 p-2 rounded">
                   <p className="text-muted-foreground">Tasks</p>
                   <p className="font-semibold">{report.stats.tasks?.total || 0}</p>
@@ -513,11 +536,15 @@ export default function ReportsPage() {
               </div>
             )}
 
-            <div className="flex gap-2">
+            {/* Action Buttons - Desktop only */}
+            <div className="hidden md:flex gap-2">
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => handleDownloadMarkdown(report)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownloadMarkdown(report);
+                }}
                 className="flex-1"
               >
                 <Download className="mr-1 h-3 w-3" />
@@ -750,6 +777,205 @@ export default function ReportsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Detail Sheet */}
+      {isMobile && mobileDetailReport && (
+        <Sheet open={!!mobileDetailId} onOpenChange={() => setMobileDetailId(null)}>
+          <SheetContent side="bottom" className="h-[95vh] flex flex-col">
+            <SheetHeader>
+              <div className="flex items-center gap-2 mb-2">
+                {getReportIcon(mobileDetailReport.type)}
+                <SheetTitle className="flex-1">{mobileDetailReport.title}</SheetTitle>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge
+                  variant="outline"
+                  className={STATUS_COLORS[mobileDetailReport.approval_status as keyof typeof STATUS_COLORS] || "bg-gray-100"}
+                >
+                  {getStatusLabel(mobileDetailReport.approval_status)}
+                </Badge>
+                {mobileDetailReport.is_published && (
+                  <Badge variant="outline" className="border-primary text-primary">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Published
+                  </Badge>
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {getReportTypeName(mobileDetailReport.type)}
+                </span>
+              </div>
+            </SheetHeader>
+
+            <div className="flex-1 overflow-y-auto space-y-4 mt-4">
+              {/* Period Info */}
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p>
+                  <strong>Period:</strong> {new Date(mobileDetailReport.period_start).toLocaleDateString()} - {new Date(mobileDetailReport.period_end).toLocaleDateString()}
+                </p>
+                <p>
+                  <strong>Created:</strong> {new Date(mobileDetailReport.created_at).toLocaleDateString()}
+                </p>
+                {mobileDetailReport.published_at && (
+                  <p className="text-primary">
+                    <strong>Published:</strong> {new Date(mobileDetailReport.published_at).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+
+              {/* Stats */}
+              {mobileDetailReport.stats && (
+                <Collapsible defaultOpen={expandedSection === "stats"} onOpenChange={(open) => open && setExpandedSection("stats")}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <BarChart className="h-4 w-4" />
+                      <h4 className="font-semibold">Quick Stats</h4>
+                    </div>
+                    <ChevronDown className="h-4 w-4 transition-transform" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 space-y-2">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="bg-gray-50 p-3 rounded">
+                        <p className="text-muted-foreground">Tasks</p>
+                        <p className="font-semibold text-lg">{mobileDetailReport.stats.tasks?.total || 0}</p>
+                      </div>
+                      <div className="bg-gray-50 p-3 rounded">
+                        <p className="text-muted-foreground">Risks</p>
+                        <p className="font-semibold text-lg">{mobileDetailReport.stats.risks?.total || 0}</p>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {/* Content */}
+              <Collapsible defaultOpen={expandedSection === "content"} onOpenChange={(open) => open && setExpandedSection("content")}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    <h4 className="font-semibold">Report Content</h4>
+                  </div>
+                  <ChevronDown className="h-4 w-4 transition-transform" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2">
+                  <div className="prose prose-sm max-w-none p-3 bg-gray-50 rounded-lg whitespace-pre-wrap text-sm">
+                    {mobileDetailReport.content_markdown}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Published Hash */}
+              {mobileDetailReport.is_published && mobileDetailReport.content_hash && (
+                <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <span className="font-semibold text-primary">Immutable Record</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Content Hash:</p>
+                  <p className="font-mono text-xs break-all">{mobileDetailReport.content_hash}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2 pt-4 border-t">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  handleDownloadMarkdown(mobileDetailReport);
+                }}
+                className="w-full"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download Markdown
+              </Button>
+
+              {!mobileDetailReport.is_published && (
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Submit for Approval */}
+                  {mobileDetailReport.approval_status === "draft" && canEdit && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        handleSubmitForApproval(mobileDetailReport);
+                        setMobileDetailId(null);
+                      }}
+                      className="w-full"
+                    >
+                      <Send className="mr-2 h-4 w-4" />
+                      Submit
+                    </Button>
+                  )}
+
+                  {/* Approve/Reject */}
+                  {mobileDetailReport.approval_status === "pending_approval" && canApprove && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          handleApprove(mobileDetailReport);
+                          setMobileDetailId(null);
+                        }}
+                        className="border-green-200 text-green-700 hover:bg-green-50"
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedReport(mobileDetailReport);
+                          setShowRejectDialog(true);
+                          setMobileDetailId(null);
+                        }}
+                        className="border-red-200 text-red-700 hover:bg-red-50"
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Reject
+                      </Button>
+                    </>
+                  )}
+
+                  {/* Publish */}
+                  {mobileDetailReport.approval_status === "approved" && !mobileDetailReport.is_published && canApprove && (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => {
+                        handlePublish(mobileDetailReport);
+                        setMobileDetailId(null);
+                      }}
+                      className="col-span-2"
+                    >
+                      <Lock className="mr-2 h-4 w-4" />
+                      Publish (Immutable)
+                    </Button>
+                  )}
+
+                  {/* Delete */}
+                  {canDelete && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        handleDeleteReport(mobileDetailReport.id);
+                        setMobileDetailId(null);
+                      }}
+                      className="col-span-2 text-destructive border-destructive/30"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Report
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
